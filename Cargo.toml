@@ -1,13 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-    "crates/app",
-    "crates/extensions",
-    "crates/libnero",
-    "crates/plugin-extensions",
-    "crates/processor",
-    "crates/wasi-logging",
-]
+members = ["crates/app", "crates/plugin-extensions"]
 
 [workspace.dependencies]
 anyhow = "1.0.95"
