@@ -1,8 +1,7 @@
 <script lang="ts">
   import { appState } from "../lib/appState.svelte";
   import LoadExtensionModal from "./LoadExtensionModal.svelte";
-  import InboxIcon from "./icons/InboxIcon.svelte";
-  import PlusIcon from "./icons/PlusIcon.svelte";
+  import { InboxIcon, PlusIcon } from "@lucide/svelte";
   import { open } from "@tauri-apps/plugin-dialog";
 
   const currentExtension = $derived(appState.extension);
@@ -27,7 +26,8 @@
 
 <section class="rounded-lg border border-neutral-200">
   <header
-    class="flex items-center justify-between border-b border-neutral-200 px-4 py-3"
+    class="flex items-center justify-between border-b border-neutral-200 px-4
+      py-3"
   >
     <h2 class="font-medium text-neutral-900">Loaded Extension</h2>
     <button

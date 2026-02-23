@@ -1,6 +1,6 @@
 <script lang="ts">
   import shockedCat from "../assets/images/shocked_cat.svg";
-  import SearchIcon from "../components/icons/SearchIcon.svelte";
+  import { SearchIcon } from "@lucide/svelte";
 
   function focusSearchInput() {
     document.getElementById("search-input")!.focus();

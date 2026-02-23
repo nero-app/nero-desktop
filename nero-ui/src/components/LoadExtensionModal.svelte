@@ -2,7 +2,7 @@
   import { appState } from "../lib/appState.svelte";
   import { createMutation } from "../lib/createMutation.svelte";
   import { createQuery } from "../lib/createQuery.svelte";
-  import XMarkIcon from "./icons/XMarkIcon.svelte";
+  import { XIcon } from "@lucide/svelte";
   import { Extension } from "@nero/plugin-extensions";
   import { onMount } from "svelte";
 
@@ -60,7 +60,7 @@
         type="button"
         class="size-6 cursor-pointer rounded-md duration-300 active:scale-95"
       >
-        <XMarkIcon />
+        <XIcon />
       </button>
     </div>
 

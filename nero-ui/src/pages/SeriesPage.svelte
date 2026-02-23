@@ -2,11 +2,10 @@
   import EpisodesList from "../components/EpisodesList.svelte";
   import ErrorMessage from "../components/ErrorMessage.svelte";
   import VideoSelectionModal from "../components/VideoSelectionModal.svelte";
-  import PlayIcon from "../components/icons/PlayIcon.svelte";
-  import ShareIcon from "../components/icons/ShareIcon.svelte";
   import { appState } from "../lib/appState.svelte";
   import { createInfiniteQuery } from "../lib/createInfiniteQuery.svelte";
   import { createQuery } from "../lib/createQuery.svelte";
+  import { PlayIcon, Share2Icon } from "@lucide/svelte";
   import type { Series, Episode } from "@nero/plugin-extensions";
 
   let { params }: { params: { seriesId: string } } = $props();
@@ -84,7 +83,7 @@
       class="cursor-pointer rounded-lg bg-red-300 px-3 py-1.5 duration-300 active:scale-95"
     >
       <div class="flex items-center gap-2">
-        <ShareIcon />
+        <Share2Icon />
         <span>Share the series</span>
       </div>
     </button>

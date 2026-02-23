@@ -1,5 +1,5 @@
 <script lang="ts">
-  import WarningIcon from "./icons/WarningIcon.svelte";
+  import { TriangleAlertIcon } from "@lucide/svelte";
 
   let allowUntrusted = $state(true);
 
@@ -21,12 +21,15 @@
       <!-- svelte-ignore a11y_consider_explicit_label -->
       <button
         class={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full
-    transition-colors ${allowUntrusted ? "bg-amber-500" : "bg-neutral-200"}`}
+          transition-colors
+          ${allowUntrusted ? "bg-amber-500" : "bg-neutral-200"}`}
         onclick={toggleUntrustedExtensions}
       >
         <span
-          class={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-  allowUntrusted ? "translate-x-6" : "translate-x-1" }`}
+          class={`inline-block h-4 w-4 transform rounded-full bg-white
+            transition-transform ${
+              allowUntrusted ? "translate-x-6" : "translate-x-1"
+            }`}
         ></span>
       </button>
       <div class="flex-1">
@@ -44,7 +47,7 @@
         class="mt-3 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-3"
       >
         <div class="size-6 text-amber-600">
-          <WarningIcon />
+          <TriangleAlertIcon />
         </div>
         <p class="text-xs text-amber-800">
           Warning: Unsigned extensions could load data from untrusted sources.

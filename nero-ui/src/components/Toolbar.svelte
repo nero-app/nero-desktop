@@ -1,6 +1,6 @@
 <script lang="ts">
   import { link, push } from "./Router.svelte";
-  import SearchIcon from "./icons/SearchIcon.svelte";
+  import { SearchIcon } from "@lucide/svelte";
 
   let searchQuery = $state("");
   function handleSearch(event: Event) {

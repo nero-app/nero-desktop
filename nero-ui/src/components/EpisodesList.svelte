@@ -3,7 +3,6 @@
   import { createInfiniteScroll } from "../lib/infiniteScroll.svelte";
   import EpisodeCard from "./EpisodeCard.svelte";
   import ErrorMessage from "./ErrorMessage.svelte";
-  import SortIcon from "./icons/SortIcon.svelte";
   import type { Episode } from "@nero/plugin-extensions";
 
   interface EpisodesListProps {
@@ -43,13 +42,7 @@
 
 <section class="flex size-full flex-col">
   <header class="sticky top-0 z-10 bg-white">
-    <div class="flex w-full items-center justify-between">
-      <h2 class="text-2xl font-semibold">Episodes</h2>
-      <!-- TODO: onclick -->
-      <button class="cursor-pointer">
-        <SortIcon />
-      </button>
-    </div>
+    <h2 class="text-2xl font-semibold">Episodes</h2>
     <hr class="border-gray-300" />
   </header>
   {#if episodesQuery.isLoading}
