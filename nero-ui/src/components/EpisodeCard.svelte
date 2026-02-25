@@ -10,25 +10,24 @@
 </script>
 
 <button
-  class="grid grid-cols-[1fr_4fr_7fr] items-center gap-4 rounded-md p-1
-    text-start duration-300 hover:bg-gray-100 active:scale-95"
+  class="group flex flex-col items-center gap-1.5 overflow-hidden rounded-lg"
   {onclick}
 >
-  <span class="truncate text-center font-medium">{episode.number}</span>
-  <picture class="aspect-video min-w-37.5">
-    <!-- TODO: Handle missing poster -->
+  <div class="relative aspect-video w-full overflow-hidden rounded-lg">
     <img
-      class="size-full rounded-lg object-cover"
-      src={episode.thumbnailUrl!}
-      alt="Episode thumbnail"
+      class="size-full object-cover transition-transform duration-300
+        group-hover:scale-105"
+      src={episode.thumbnailUrl}
+      alt="Episode {episode.number}"
     />
-  </picture>
-  <div class="min-w-0">
-    <h3 class="truncate font-medium">
-      {episode.title ?? `Episode ${episode.number}`}
-    </h3>
-    <p class="line-clamp-3 text-sm text-gray-500">
-      {episode.description}
-    </p>
+    <div
+      class="absolute inset-0 flex items-center justify-center bg-black/20
+        opacity-0 transition-opacity group-hover:opacity-100"
+    >
+      <span class="text-sm font-semibold text-white">Ep. {episode.number}</span>
+    </div>
   </div>
+  <span class="w-full truncate text-center text-xs text-neutral-600">
+    {episode.title}
+  </span>
 </button>
