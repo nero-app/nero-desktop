@@ -2,9 +2,10 @@
   import shockedCat from "../assets/images/shocked_cat.svg";
   import ErrorMessage from "../components/ErrorMessage.svelte";
   import SeriesCard from "../components/SeriesCard.svelte";
-  import { appState } from "../lib/appState.svelte";
+  // import { appState } from "../lib/appState.svelte";
   import { createInfiniteQuery } from "../lib/createInfiniteQuery.svelte";
   import { createQuery } from "../lib/createQuery.svelte";
+  import { sampleSeries } from "../lib/dummy";
   import { createInfiniteScroll } from "../lib/infiniteScroll.svelte";
   import type {
     Filter,
@@ -15,9 +16,10 @@
   let { querystring }: { querystring: string } = $props();
 
   let filtersQuery = createQuery(() => {
-    const extension = appState.extension;
-    if (!extension) throw new Error("No extension loaded");
-    return extension.getFilters();
+    // const extension = appState.extension;
+    // if (!extension) throw new Error("No extension loaded");
+    // return extension.getFilters();
+    return [];
   });
   let searchFilters = $state<SearchFilter[]>([]);
 
@@ -25,12 +27,22 @@
     decodeURIComponent(querystring.substring(querystring.indexOf("q=") + 2)),
   );
   let searchQuery = createInfiniteQuery(async (page) => {
-    const extension = appState.extension;
-    if (!extension) throw new Error("No extension loaded");
-    const result = await extension.search(query, page, searchFilters);
+    // const extension = appState.extension;
+    // if (!extension) throw new Error("No extension loaded");
+    // const result = await extension.search(query, page, searchFilters);
+    // return {
+    //   data: result.items,
+    //   hasNextPage: result.hasNextPage,
+    // };
+
+    const sampleSeriesList = Array.from({ length: 12 }, (_, i) => ({
+      ...sampleSeries,
+      id: String(i + 1),
+    }));
+
     return {
-      data: result.items,
-      hasNextPage: result.hasNextPage,
+      data: sampleSeriesList,
+      hasNextPage: false,
     };
   });
   let infiniteScroll = createInfiniteScroll(() => searchQuery.fetchNextPage());

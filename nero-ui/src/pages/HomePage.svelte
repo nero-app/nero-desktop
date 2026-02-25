@@ -1,5 +1,7 @@
 <script lang="ts">
   import shockedCat from "../assets/images/shocked_cat.svg";
+  import Toolbar from "../components/Toolbar.svelte";
+  import { sampleSeries } from "../lib/dummy";
   import { SearchIcon } from "@lucide/svelte";
 
   function focusSearchInput() {
@@ -8,7 +10,9 @@
 </script>
 
 {#snippet emptyFeedback()}
-  <article class="flex flex-col items-center justify-center overflow-auto pb-8">
+  <article
+    class="flex size-full flex-col items-center justify-center overflow-auto pb-8"
+  >
     <img class="w-64" src={shockedCat} alt="Shocked cat" />
     <p class="pb-2 text-center">
       Whoops...
@@ -27,12 +31,16 @@
   </article>
 {/snippet}
 
-<div class="grid h-full grid-cols-[2fr_auto_3fr]">
-  <figure class="overflow-hidden pb-8">
-    <div class="size-full rounded-xl bg-gray-700"></div>
+<div class="grid h-full grid-cols-[2fr_3fr]">
+  <figure class="overflow-hidden">
+    <img
+      class="size-full object-cover"
+      src={sampleSeries.posterUrl}
+      alt={sampleSeries.title}
+    />
   </figure>
-  <div class="flex w-20 items-center pb-8">
-    <p class="rotate-90">Indicators...</p>
+  <div class="flex size-full flex-col p-4">
+    <Toolbar />
+    {@render emptyFeedback()}
   </div>
-  {@render emptyFeedback()}
 </div>
