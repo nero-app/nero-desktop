@@ -11,8 +11,7 @@
   }
 </script>
 
-<nav class="grid w-full grid-cols-[1fr_1fr_1fr]">
-  <p>Nero app v1.0</p>
+<nav class="grid w-full grid-cols-[1fr_1fr]">
   <ul class="flex gap-4">
     <li>
       <a href="/" use:link>Home</a>
