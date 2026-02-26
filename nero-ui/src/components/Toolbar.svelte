@@ -1,18 +1,10 @@
 <script lang="ts">
-  import { link, push } from "./Router.svelte";
+  import { link } from "./Router.svelte";
   import { SearchIcon } from "@lucide/svelte";
-
-  let searchQuery = $state("");
-  function handleSearch(event: Event) {
-    event.preventDefault();
-    if (searchQuery) {
-      push(`/search?q=${encodeURIComponent(searchQuery)}`);
-    }
-  }
 </script>
 
-<nav class="grid w-full grid-cols-[1fr_1fr]">
-  <ul class="flex gap-4">
+<nav class="grid w-full grid-cols-[1fr_1fr] text-neutral-900">
+  <ul class="flex w-full justify-between gap-4">
     <li>
       <a href="/" use:link>Home</a>
     </li>
@@ -23,17 +15,12 @@
       <a href="/settings" use:link>Settings</a>
     </li>
   </ul>
-  <form
-    class="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1"
-    onsubmit={handleSearch}
-  >
-    <SearchIcon />
-    <input
-      class="w-full bg-slate-100 text-slate-400 outline-none"
-      id="search-input"
-      type="search"
-      placeholder="Search"
-      bind:value={searchQuery}
-    />
-  </form>
+
+  <ul class="flex items-center justify-end gap-4">
+    <li>
+      <a href="/search" use:link>
+        <SearchIcon size={22} />
+      </a>
+    </li>
+  </ul>
 </nav>
