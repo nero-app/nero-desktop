@@ -1,0 +1,82 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error_title": "Whoops...",
+    "error_hint": "Something went wrong.",
+    "error_details": "Technical details",
+    "retry": "Retry",
+    "reset": "Reset",
+    "separator": "•",
+    "change": "Change",
+    "tip": "Tip",
+    "empty": "Nothing found here.",
+    "no_results": "No results found."
+  },
+  "nav": {
+    "home": "Home",
+    "extensions": "Extensions",
+    "settings": "Settings",
+    "app": "App"
+  },
+  "media": {
+    "episodes": "Episodes",
+    "start_watching": "Start watching",
+    "season": "Season",
+    "details": "Details",
+    "search_placeholder": "Search series",
+    "no_results": "We couldn't find any series.",
+    "player_not_configured": "No video player configured. Go to Settings to set one.",
+    "player_launching": "Opening player...",
+    "player_launching_hint": "Depending on your player, it may take a moment to appear."
+  },
+  "settings": {
+    "app": {
+      "title": "Application",
+      "subtitle": "Customize how the application behaves",
+      "language": {
+        "title": "Language",
+        "description": "Choose the language of the application",
+        "select_label": "Display language"
+      },
+      "player": {
+        "title": "Video Player",
+        "description": "Choose which application will open video files",
+        "select_title": "Choose Video Player",
+        "placeholder": "Select Video Player",
+        "browse_hint": "Click to browse for your preferred player",
+        "popular_options": "Popular options:"
+      },
+      "torrent": {
+        "title": "Torrent Support",
+        "description": "Enable built-in torrent functionality",
+        "enable_label": "Enable Torrent Support",
+        "enable_description": "Allow the application to stream and download torrents directly",
+        "output_folder_title": "Choose Output Folder",
+        "output_folder_label": "Output Folder"
+      }
+    },
+    "extensions": {
+      "title": "Extensions",
+      "subtitle": "Manage and load new content sources",
+      "load": "Load Extension",
+      "loaded_label": "Loaded Extension",
+      "status_idle": "No extensions loaded",
+      "single_notice": "Only one extension can be loaded at a time",
+      "meta": {
+        "fallback_title": "Extension",
+        "version": "Version",
+        "revision": "Revision",
+        "authors": "Authors",
+        "licenses": "Licenses",
+        "source": "Source",
+        "homepage": "Homepage",
+        "range": "Range",
+        "producers": "Producers",
+        "dependencies": "Dependencies"
+      }
+    }
+  },
+  "filters": {
+    "empty": "No filters available"
+  }
+}

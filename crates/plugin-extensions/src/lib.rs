@@ -4,6 +4,7 @@ use libnero::{
     ExtensionMetadata, Nero, Processor,
     types::{EpisodesPage, FilterCategory, SearchFilter, Series, SeriesPage, Video},
 };
+use reqwest::Client;
 use tauri::{
     Manager, Result, Runtime, State,
     plugin::{self, TauriPlugin},
@@ -11,6 +12,7 @@ use tauri::{
 
 struct PluginState {
     nero: Nero,
+    http_client: Client,
 }
 
 #[tauri::command]
@@ -27,6 +29,29 @@ async fn load_extension(state: State<'_, PluginState>, file_path: String) -> Res
     state
         .nero
         .load_extension(file_path)
+        .await
+        .map_err(Into::into)
+}
+
+#[tauri::command]
+#[tracing::instrument(skip(state))]
+async fn enable_torrent_support(
+    state: State<'_, PluginState>,
+    output_folder: String,
+) -> Result<()> {
+    state
+        .nero
+        .enable_torrent_support(output_folder.into(), state.http_client.clone())
+        .await
+        .map_err(Into::into)
+}
+
+#[tauri::command]
+#[tracing::instrument(skip(state))]
+async fn disable_torrent_support(state: State<'_, PluginState>) -> Result<()> {
+    state
+        .nero
+        .disable_torrent_support()
         .await
         .map_err(Into::into)
 }
@@ -82,10 +107,11 @@ async fn get_series_videos(
     state: State<'_, PluginState>,
     series_id: &str,
     episode_id: &str,
+    episode_number: u32,
 ) -> Result<Vec<Video>> {
     state
         .nero
-        .get_series_videos(series_id, episode_id)
+        .get_series_videos(series_id, episode_id, episode_number)
         .await
         .map_err(Into::into)
 }
@@ -100,8 +126,10 @@ impl Builder {
     }
 
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
+        let http_client = Client::new();
         let state = PluginState {
-            nero: Nero::new(Processor::new(self.processor_addr)),
+            nero: Nero::new(Processor::new(self.processor_addr, http_client.clone())),
+            http_client,
         };
 
         plugin::Builder::new("nero-extensions")
@@ -119,6 +147,8 @@ impl Builder {
             .invoke_handler(tauri::generate_handler![
                 get_extension_metadata,
                 load_extension,
+                enable_torrent_support,
+                disable_torrent_support,
                 get_filters,
                 search,
                 get_series_info,

@@ -2,18 +2,17 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ESNext", "DOM"],
+    "types": ["vite/client"],
 
     "noEmit": true,
     "isolatedModules": true,
     "sourceMap": true,
 
-    "allowJs": true,
-    "checkJs": true,
-
-    "esModuleInterop": true,
     "useDefineForClassFields": true,
+    "noUncheckedSideEffectImports": true,
 
-    "noUncheckedSideEffectImports": true
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js"
   },
-  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "vite.config.ts"]
+  "include": ["src", "vite.config.ts"]
 }

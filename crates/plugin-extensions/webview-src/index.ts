@@ -2,15 +2,15 @@ import { invoke } from "@tauri-apps/api/core";
 
 export interface Metadata {
   name?: string;
-  producers?: string[];
-  authors?: string[];
   description?: string;
-  licenses?: string[];
+  version?: string;
+  revision?: string;
+  authors?: string;
+  licenses?: string;
   source?: string;
   homepage?: string;
-  revision?: string;
-  version?: string;
-  range?: string;
+  range?: { start: number; end: number };
+  producers?: [string, Record<string, string>][];
   dependencies?: string[];
 }
 
@@ -58,6 +58,18 @@ export interface Video {
   url: string;
   server: string;
   resolution: [number, number];
+}
+
+export async function enableTorrentSupport(
+  outputFolder: string,
+): Promise<void> {
+  return await invoke("plugin:nero-extensions|enable_torrent_support", {
+    outputFolder,
+  });
+}
+
+export async function disableTorrentSupport(): Promise<void> {
+  return await invoke("plugin:nero-extensions|disable_torrent_support");
 }
 
 export class Extension {
@@ -113,10 +125,15 @@ export class Extension {
     });
   }
 
-  async getSeriesVideos(seriesId: string, episodeId: string): Promise<Video[]> {
+  async getSeriesVideos(
+    seriesId: string,
+    episodeId: string,
+    episodeNumber: number,
+  ): Promise<Video[]> {
     return await invoke("plugin:nero-extensions|get_series_videos", {
       seriesId,
       episodeId,
+      episodeNumber,
     });
   }
 }

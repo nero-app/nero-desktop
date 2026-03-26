@@ -29,3 +29,4 @@ minWidth = 768
 minHeight = 480
 maxWidth = 1280
 maxHeight = 800
+decorations = false
