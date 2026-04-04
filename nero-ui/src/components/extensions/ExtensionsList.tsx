@@ -3,7 +3,8 @@ import { appState } from "../../store/appState";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
 import { ExtensionCard } from "./ExtensionCard";
-import ExtensionDialog from "./ExtensionDialog";
+import { ExtensionInfoDialog } from "./ExtensionInfoDialog";
+import { ExtensionLoadDialog } from "./ExtensionLoadDialog";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BlocksIcon } from "lucide-solid";
 import { Match, Show, Switch, createSignal } from "solid-js";
@@ -71,7 +72,7 @@ export default function ExtensionsList() {
 
       <Switch>
         <Match when={showAddDialog() && selectedFile()}>
-          <ExtensionDialog
+          <ExtensionLoadDialog
             filePath={selectedFile()!}
             open={showAddDialog()}
             onOpenChange={(open) => {
@@ -80,10 +81,9 @@ export default function ExtensionsList() {
           />
         </Match>
         <Match when={showInfoDialog()}>
-          <ExtensionDialog
-            filePath={appState.extension!.filePath!}
+          <ExtensionInfoDialog
+            extension={currentExtension()!}
             open={showInfoDialog()}
-            readOnly
             onOpenChange={(open) => {
               if (!open) setShowInfoDialog(false);
             }}

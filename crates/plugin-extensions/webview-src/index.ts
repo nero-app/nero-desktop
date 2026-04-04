@@ -1,5 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 
+export interface ExtensionOptions {
+  cacheDir: string;
+  maxCacheSize?: number;
+}
+
 export interface Metadata {
   name?: string;
   description?: string;
@@ -72,13 +77,22 @@ export async function disableTorrentSupport(): Promise<void> {
   return await invoke("plugin:nero-extensions|disable_torrent_support");
 }
 
+export const MAX_CACHE_SIZE_MB = 250;
+export const MAX_CACHE_SIZE_BYTES = MAX_CACHE_SIZE_MB * 1024 * 1024;
+
 export class Extension {
   readonly filePath: string;
   readonly metadata: Metadata;
+  readonly options: ExtensionOptions;
 
-  private constructor(filePath: string, metadata: Metadata) {
+  private constructor(
+    filePath: string,
+    metadata: Metadata,
+    options: ExtensionOptions,
+  ) {
     this.filePath = filePath;
     this.metadata = metadata;
+    this.options = options;
   }
 
   static async getMetadata(filePath: string): Promise<Metadata> {
@@ -87,10 +101,22 @@ export class Extension {
     });
   }
 
-  static async load(filePath: string): Promise<Extension> {
+  static async load(
+    filePath: string,
+    options: ExtensionOptions,
+  ): Promise<Extension> {
+    if (
+      options.maxCacheSize !== undefined &&
+      options.maxCacheSize > MAX_CACHE_SIZE_BYTES
+    ) {
+      throw new Error(`maxCacheSize cannot exceed ${MAX_CACHE_SIZE_MB} MB`);
+    }
     const metadata = await Extension.getMetadata(filePath);
-    await invoke("plugin:nero-extensions|load_extension", { filePath });
-    return new Extension(filePath, metadata);
+    await invoke("plugin:nero-extensions|load_extension", {
+      filePath,
+      options,
+    });
+    return new Extension(filePath, metadata, options);
   }
 
   async getFilters(): Promise<FilterCategory[]> {

@@ -2,7 +2,9 @@ use std::net::SocketAddr;
 
 use libnero::{
     ExtensionMetadata, Nero, Processor,
-    types::{EpisodesPage, FilterCategory, SearchFilter, Series, SeriesPage, Video},
+    types::{
+        EpisodesPage, ExtensionOptions, FilterCategory, SearchFilter, Series, SeriesPage, Video,
+    },
 };
 use reqwest::Client;
 use tauri::{
@@ -25,10 +27,14 @@ async fn get_extension_metadata(file_path: String) -> Result<ExtensionMetadata> 
 
 #[tauri::command]
 #[tracing::instrument(skip(state))]
-async fn load_extension(state: State<'_, PluginState>, file_path: String) -> Result<()> {
+async fn load_extension(
+    state: State<'_, PluginState>,
+    file_path: String,
+    options: ExtensionOptions,
+) -> Result<()> {
     state
         .nero
-        .load_extension(file_path)
+        .load_extension(file_path, options)
         .await
         .map_err(Into::into)
 }

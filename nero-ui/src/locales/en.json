@@ -10,7 +10,8 @@
     "change": "Change",
     "tip": "Tip",
     "empty": "Nothing found here.",
-    "no_results": "No results found."
+    "no_results": "No results found.",
+    "browse": "Browse"
   },
   "nav": {
     "home": "Home",
@@ -73,6 +74,14 @@
         "range": "Range",
         "producers": "Producers",
         "dependencies": "Dependencies"
+      },
+      "options": {
+        "title": "Load Options",
+        "cache_dir": "Cache Directory",
+        "cache_dir_placeholder": "Select a directory...",
+        "max_cache_size": "Max Cache Size",
+        "max_cache_size_hint": "Enter the cache size in MB. Limits are enforced to prevent excessive storage usage.",
+        "max_cache_size_exceeded": "Cannot exceed the maximum allowed size"
       }
     }
   },
