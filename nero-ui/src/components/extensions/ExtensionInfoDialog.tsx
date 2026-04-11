@@ -1,5 +1,6 @@
 import { t } from "../../lib/i18n";
 import { Dialog } from "../ui/Dialog";
+import { Typography } from "../ui/Typography";
 import { ExtensionMetaPanel } from "./ExtensionMetaPanel";
 import { Extension, type Metadata } from "@nero/plugin-extensions";
 import { createResource, type ComponentProps, splitProps } from "solid-js";
@@ -33,29 +34,31 @@ export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
           metadata={metadata}
         />
 
-        <div class="border border-neutral-200" />
+        <hr class="h-full border border-neutral-200" />
 
-        <div class="flex flex-col gap-4">
-          <p class="font-semibold">{t("settings.extensions.options.title")}</p>
+        <section class="flex flex-col gap-4">
+          <Typography variant="h3">
+            {t("settings.extensions.options.title")}
+          </Typography>
 
           <div class="flex flex-col gap-2">
-            <span class="text-sm font-medium">
+            <Typography variant="subtitle">
               {t("settings.extensions.options.cache_dir")}
-            </span>
-            <span class="truncate text-sm">{options().cacheDir}</span>
+            </Typography>
+            <Typography as="code">{options().cacheDir}</Typography>
           </div>
 
           <div class="flex flex-col gap-2">
-            <span class="text-sm font-medium">
+            <Typography variant="subtitle">
               {t("settings.extensions.options.max_cache_size")}
-            </span>
-            <span class="text-sm">
+            </Typography>
+            <Typography>
               {options().maxCacheSize
                 ? `${options().maxCacheSize! / 1024 / 1024} MB`
                 : "0 MB"}
-            </span>
+            </Typography>
           </div>
-        </div>
+        </section>
       </Dialog.Content>
     </Dialog>
   );

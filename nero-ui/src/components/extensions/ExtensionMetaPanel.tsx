@@ -1,8 +1,10 @@
 import { t } from "../../lib/i18n";
+import { Typography } from "../ui/Typography";
 import { type Metadata } from "@nero/plugin-extensions";
 import { Switch, Match, Show } from "solid-js";
 import type { Resource } from "solid-js";
 
+// TODO: https://v2.tauri.app/plugin/opener/
 function MetaItem(props: {
   label: string;
   value?: string | null;
@@ -11,19 +13,14 @@ function MetaItem(props: {
   return (
     <Show when={props.value}>
       <div class="flex flex-col gap-2">
-        <span class="font-semibold">{props.label}</span>
+        <Typography variant="subtitle" as="label">
+          {props.label}
+        </Typography>
         <Show
           when={props.isLink}
-          fallback={<span class="truncate text-sm">{props.value}</span>}
+          fallback={<Typography class="truncate">{props.value}</Typography>}
         >
-          <a
-            href={props.value!}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="truncate text-sm text-blue-500 underline"
-          >
-            {props.value}
-          </a>
+          <button>{props.value}</button>
         </Show>
       </div>
     </Show>
@@ -52,29 +49,27 @@ export function ExtensionMetaPanel(props: {
   metadata: Resource<Metadata>;
 }) {
   return (
-    <div class="flex flex-col gap-4">
-      <span>{props.filePath}</span>
+    <aside class="flex flex-col gap-4">
+      <Typography as="code">{props.filePath}</Typography>
 
       <Switch>
         <Match when={props.metadata.loading}>
           <div class="flex items-center justify-center py-8">
-            <span class="animate-pulse text-gray-500">
-              {t("common.loading")}
-            </span>
+            <Typography>{t("common.loading")}</Typography>
           </div>
         </Match>
 
         <Match when={props.metadata.error}>
-          <p class="text-red-500">
+          <Typography>
             {props.metadata.error?.message ?? t("common.error_hint")}
-          </p>
+          </Typography>
         </Match>
 
         <Match when={props.metadata()}>
           {(m) => (
             <div class="flex flex-col gap-3">
               <Show when={m().description}>
-                <p class="text-gray-600">{m().description}</p>
+                <Typography>{m().description}</Typography>
               </Show>
               <MetaItem
                 label={t("settings.extensions.meta.version")}
@@ -124,6 +119,6 @@ export function ExtensionMetaPanel(props: {
           )}
         </Match>
       </Switch>
-    </div>
+    </aside>
   );
 }

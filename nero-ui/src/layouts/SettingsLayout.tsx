@@ -1,3 +1,4 @@
+import { Typography } from "../components/ui/Typography";
 import { t } from "../lib/i18n";
 import { SidebarLayout } from "./SidebarLayout";
 import { A } from "@solidjs/router";
@@ -17,7 +18,9 @@ export default function SettingsLayout(props: ParentProps) {
           <For each={links}>
             {(link) => (
               <li>
-                <A href={link.href}>{link.label()}</A>
+                <A href={link.href}>
+                  <Typography as="span">{link.label()}</Typography>
+                </A>
               </li>
             )}
           </For>

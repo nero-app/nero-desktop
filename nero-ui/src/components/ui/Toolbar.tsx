@@ -1,4 +1,5 @@
 import { t } from "../../lib/i18n";
+import { Typography } from "./Typography";
 import { A } from "@solidjs/router";
 import { SearchIcon } from "lucide-solid";
 import { For } from "solid-js";
@@ -11,12 +12,14 @@ const links = [
 
 export default function Toolbar() {
   return (
-    <nav class="grid w-full grid-cols-[1fr_1fr] text-neutral-900">
+    <nav class="grid w-full grid-cols-[1fr_1fr]">
       <ul class="flex w-full justify-between gap-4">
         <For each={links}>
           {(link) => (
             <li>
-              <A href={link.href}>{link.label()}</A>
+              <A href={link.href}>
+                <Typography as="span">{link.label()}</Typography>
+              </A>
             </li>
           )}
         </For>

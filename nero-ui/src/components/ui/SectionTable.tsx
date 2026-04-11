@@ -1,3 +1,4 @@
+import { Typography } from "./Typography";
 import {
   type ParentProps,
   type ComponentProps,
@@ -36,24 +37,27 @@ function Header(props: HeaderProps) {
 
   return (
     <header
-      class={twMerge("border-b border-neutral-200 px-4 py-3", local.class)}
+      class={twMerge(
+        `flex items-center justify-between gap-2 border-b border-neutral-200
+        px-4 py-3`,
+        local.class,
+      )}
       {...others}
     >
-      <div class="flex items-center justify-between gap-2">
-        <div>
-          <h2 class="font-medium text-neutral-900">{local.title}</h2>
-          <Show when={local.description}>
-            <p class="text-sm text-neutral-500">{local.description}</p>
-          </Show>
-        </div>
-
-        <Show when={local.children}>
-          <div class="flex shrink-0 items-center gap-2">{local.children}</div>
+      <div>
+        <Typography variant="h3">{local.title}</Typography>
+        <Show when={local.description}>
+          <Typography variant="subtitle">{local.description}</Typography>
         </Show>
       </div>
+
+      <Show when={local.children}>
+        <div class="flex shrink-0 items-center gap-2">{local.children}</div>
+      </Show>
     </header>
   );
 }
+
 type PolymorphicProps<T extends ValidComponent> = ParentProps &
   ComponentProps<T> & {
     as?: T;

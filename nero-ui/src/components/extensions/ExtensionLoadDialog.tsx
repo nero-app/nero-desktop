@@ -4,6 +4,7 @@ import { setAppState } from "../../store/appState";
 import { Button } from "../ui/Button";
 import { Dialog } from "../ui/Dialog";
 import { Input } from "../ui/Input";
+import { Typography } from "../ui/Typography";
 import { ExtensionMetaPanel } from "./ExtensionMetaPanel";
 import {
   Extension,
@@ -72,18 +73,20 @@ export function ExtensionLoadDialog(props: ExtensionLoadDialogProps) {
       <Dialog.Content class="grid grid-cols-[1fr_auto_1fr] gap-4 p-4">
         <ExtensionMetaPanel filePath={local.filePath} metadata={metadata} />
 
-        <div class="border border-neutral-200" />
+        <hr class="h-full border border-neutral-200" />
 
-        <div class="flex flex-col gap-4">
-          <p class="font-semibold">{t("settings.extensions.options.title")}</p>
+        <section class="flex flex-col gap-4">
+          <Typography variant="h3">
+            {t("settings.extensions.options.title")}
+          </Typography>
 
           <div class="flex flex-col gap-2">
-            <span class="text-sm font-medium">
+            <Typography variant="subtitle" as="label">
               {t("settings.extensions.options.cache_dir")}
-            </span>
+            </Typography>
             <div class="flex gap-2">
               <Input
-                class="px-3 py-2 text-slate-600 placeholder:text-slate-400"
+                class="px-3 py-2"
                 readOnly
                 placeholder={t(
                   "settings.extensions.options.cache_dir_placeholder",
@@ -91,17 +94,17 @@ export function ExtensionLoadDialog(props: ExtensionLoadDialogProps) {
                 value={cacheDir() ?? ""}
               />
               <Button variant="outline" onClick={pickCacheDir}>
-                {t("common.browse")}
+                <Typography as="span">{t("common.browse")}</Typography>
               </Button>
             </div>
           </div>
 
           <div class="flex flex-col gap-2">
-            <span class="text-sm font-medium">
+            <Typography variant="subtitle" as="label">
               {t("settings.extensions.options.max_cache_size")}
-            </span>
+            </Typography>
             <Input
-              class="px-3 py-2 text-slate-600 placeholder:text-slate-400"
+              class="px-3 py-2"
               type="number"
               min={0}
               max={MAX_CACHE_SIZE_MB}
@@ -111,22 +114,23 @@ export function ExtensionLoadDialog(props: ExtensionLoadDialogProps) {
             <Show
               when={isMaxCacheExceeded()}
               fallback={
-                <span class="text-xs">
+                <Typography variant="caption">
                   {t("settings.extensions.options.max_cache_size_hint")} (max{" "}
                   {MAX_CACHE_SIZE_MB} MB)
-                </span>
+                </Typography>
               }
             >
-              <span class="text-xs text-red-500">
+              {/* TODO: error variant */}
+              <Typography variant="caption">
                 {t("settings.extensions.options.max_cache_size_exceeded")}
-              </span>
+              </Typography>
             </Show>
           </div>
 
           <Show when={loadMutation.error}>
-            <p class="text-sm text-red-500">
+            <Typography class="text-red-500">
               {loadMutation.error?.message ?? t("common.error_hint")}
-            </p>
+            </Typography>
           </Show>
 
           <Button
@@ -139,11 +143,13 @@ export function ExtensionLoadDialog(props: ExtensionLoadDialogProps) {
               loadMutation.loading
             }
           >
-            {loadMutation.loading
-              ? t("common.loading")
-              : t("settings.extensions.load")}
+            <Typography as="span">
+              {loadMutation.loading
+                ? t("common.loading")
+                : t("settings.extensions.load")}
+            </Typography>
           </Button>
-        </div>
+        </section>
       </Dialog.Content>
     </Dialog>
   );

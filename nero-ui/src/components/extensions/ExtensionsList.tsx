@@ -2,6 +2,7 @@ import { t } from "../../lib/i18n";
 import { appState } from "../../store/appState";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
+import { Typography } from "../ui/Typography";
 import { ExtensionCard } from "./ExtensionCard";
 import { ExtensionInfoDialog } from "./ExtensionInfoDialog";
 import { ExtensionLoadDialog } from "./ExtensionLoadDialog";
@@ -31,44 +32,44 @@ export default function ExtensionsList() {
   }
 
   return (
-    <>
-      <SectionTable>
-        <SectionTable.Header title={t("settings.extensions.loaded_label")}>
-          <Show when={currentExtension()}>
-            <Button variant="outline" size="sm" onClick={selectExtension}>
-              {t("settings.extensions.load")}
-            </Button>
-          </Show>
-        </SectionTable.Header>
-        <SectionTable.Content>
-          <Show
-            when={currentExtension()}
-            fallback={
-              <div class="flex flex-col items-center gap-2 text-center">
-                <BlocksIcon class="size-10 text-neutral-300" />
-                <p class="text-neutral-600">
-                  {t("settings.extensions.status_idle")}
-                </p>
-                <Button variant="outline" size="sm" onClick={selectExtension}>
+    <SectionTable>
+      <SectionTable.Header title={t("settings.extensions.loaded_label")}>
+        <Show when={currentExtension()}>
+          <Button variant="outline" size="sm" onClick={selectExtension}>
+            <Typography as="span">{t("settings.extensions.load")}</Typography>
+          </Button>
+        </Show>
+      </SectionTable.Header>
+
+      <SectionTable.Content>
+        <Show
+          when={currentExtension()}
+          fallback={
+            <div class="flex flex-col items-center gap-2 text-center">
+              <BlocksIcon class="size-10 text-neutral-300" />
+              <Typography>{t("settings.extensions.status_idle")}</Typography>
+              <Button variant="outline" size="sm" onClick={selectExtension}>
+                <Typography as="span">
                   {t("settings.extensions.load")}
-                </Button>
-              </div>
-            }
-          >
-            {(ext) => (
-              <ExtensionCard
-                extension={ext()}
-                onClick={() => setShowInfoDialog(true)}
-              />
-            )}
-          </Show>
-        </SectionTable.Content>
-        <SectionTable.Footer>
-          <p class="text-sm text-neutral-600">
-            {t("settings.extensions.single_notice")}
-          </p>
-        </SectionTable.Footer>
-      </SectionTable>
+                </Typography>
+              </Button>
+            </div>
+          }
+        >
+          {(ext) => (
+            <ExtensionCard
+              extension={ext()}
+              onClick={() => setShowInfoDialog(true)}
+            />
+          )}
+        </Show>
+      </SectionTable.Content>
+
+      <SectionTable.Footer>
+        <Typography variant="caption">
+          {t("settings.extensions.single_notice")}
+        </Typography>
+      </SectionTable.Footer>
 
       <Switch>
         <Match when={showAddDialog() && selectedFile()}>
@@ -90,6 +91,6 @@ export default function ExtensionsList() {
           />
         </Match>
       </Switch>
-    </>
+    </SectionTable>
   );
 }

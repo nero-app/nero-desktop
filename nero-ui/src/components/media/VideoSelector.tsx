@@ -2,6 +2,7 @@ import { t } from "../../lib/i18n";
 import { appState } from "../../store/appState";
 import { Button } from "../ui/Button";
 import { Dialog } from "../ui/Dialog";
+import { Typography } from "../ui/Typography";
 import type { Episode } from "@nero/plugin-extensions";
 import { invoke } from "@tauri-apps/api/core";
 import { LoaderCircleIcon } from "lucide-solid";
@@ -65,24 +66,22 @@ export default function VideoSelector(props: VideoSelectorProps) {
             class="aspect-video w-full rounded object-cover"
             alt={`Episode ${props.episode.number}: ${props.episode.title}`}
           />
-          <p class="text-sm">{props.episode.description}</p>
+          <Typography>{props.episode.description}</Typography>
         </div>
 
         <Switch>
           <Match when={!appState.config.playerPath}>
             <div class="flex items-center justify-center px-4">
-              <p class="text-center text-red-500">
-                {t("media.player_not_configured")}
-              </p>
+              <Typography>{t("media.player_not_configured")}</Typography>
             </div>
           </Match>
           <Match when={videosResource.loading}>
             <div class="flex items-center justify-center">
-              <p class="animate-pulse text-gray-500">{t("common.loading")}</p>
+              <Typography>{t("common.loading")}</Typography>
             </div>
           </Match>
           <Match when={videosResource.error}>
-            <p class="text-red-500">{videosResource.error.message}</p>
+            <Typography>{videosResource.error.message}</Typography>
           </Match>
           <Match when={launching()}>
             <div
@@ -94,12 +93,12 @@ export default function VideoSelector(props: VideoSelectorProps) {
                 class="animate-spin text-neutral-500"
               />
               <div class="flex flex-col gap-2">
-                <p class="font-medium text-neutral-700">
+                <Typography variant="h4">
                   {t("media.player_launching")}
-                </p>
-                <p class="animate-pulse text-neutral-500">
+                </Typography>
+                <Typography variant="caption">
                   {t("media.player_launching_hint")}
-                </p>
+                </Typography>
               </div>
             </div>
           </Match>
@@ -112,8 +111,12 @@ export default function VideoSelector(props: VideoSelectorProps) {
                       variant="outline"
                       onClick={() => selectVideo(video.url)}
                     >
-                      <span>{video.server}</span>
-                      <span class="text-sm">{video.resolution.join("x")}</span>
+                      <Typography variant="body" as="span">
+                        {video.server}
+                      </Typography>
+                      <Typography variant="caption" as="span">
+                        {video.resolution.join("x")}
+                      </Typography>
                     </Button>
                   </li>
                 )}

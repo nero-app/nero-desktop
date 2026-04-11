@@ -6,6 +6,7 @@ import {
   type Locale,
 } from "../../lib/i18n";
 import { SectionTable } from "../ui/SectionTable";
+import { Typography } from "../ui/Typography";
 import { Select } from "@kobalte/core/select";
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-solid";
 
@@ -21,9 +22,9 @@ export default function LanguageSettings() {
         description={t("settings.app.language.description")}
       />
       <SectionTable.Content class="flex items-center justify-between gap-4">
-        <p class="font-medium text-neutral-900">
+        <Typography as="label">
           {t("settings.app.language.select_label")}
-        </p>
+        </Typography>
         <Select<Language>
           options={languages}
           optionValue="locale"
@@ -37,7 +38,9 @@ export default function LanguageSettings() {
                 rounded-md px-3 py-2 text-sm text-neutral-700 outline-none
                 hover:bg-neutral-100 data-highlighted:bg-neutral-100"
             >
-              <Select.ItemLabel>{props.item.rawValue.label}</Select.ItemLabel>
+              <Select.ItemLabel>
+                <Typography as="span">{props.item.rawValue.label}</Typography>
+              </Select.ItemLabel>
               <Select.ItemIndicator>
                 <CheckIcon size={14} class="text-orange-400" />
               </Select.ItemIndicator>
@@ -50,7 +53,11 @@ export default function LanguageSettings() {
               hover:border-neutral-400 hover:bg-neutral-100"
           >
             <Select.Value<Language>>
-              {(state) => state.selectedOption().label}
+              {(state) => (
+                <Typography as="span">
+                  {state.selectedOption().label}
+                </Typography>
+              )}
             </Select.Value>
             <ChevronsUpDownIcon size={14} class="text-neutral-400" />
           </Select.Trigger>

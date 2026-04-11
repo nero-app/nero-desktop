@@ -2,6 +2,7 @@ import { t } from "../../lib/i18n";
 import { appState, setAppState } from "../../store/appState";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
+import { Typography } from "../ui/Typography";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Show } from "solid-js";
 
@@ -11,16 +12,14 @@ const players = [
   { label: "IINA", href: "https://iina.io/" },
 ];
 
+// TODO: https://v2.tauri.app/plugin/opener/
 function PlayerLink(props: { label: string; href: string }) {
   return (
-    <a
-      href={props.href}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="cursor-pointer text-blue-500 underline underline-offset-2"
-    >
-      {props.label}
-    </a>
+    <button class="cursor-pointer text-blue-500 underline underline-offset-2">
+      <Typography variant="caption" as="span">
+        {props.label}
+      </Typography>
+    </button>
   );
 }
 
@@ -44,26 +43,28 @@ export default function PlayerSettings() {
       />
       <SectionTable.Content class="flex items-center justify-between gap-4">
         <div class="min-w-0">
-          <p class="truncate font-medium text-neutral-900">
+          <Typography variant="h4" class="truncate">
             {t("settings.app.player.placeholder")}
-          </p>
+          </Typography>
           <Show
             when={playerPath()}
             fallback={
-              <p class="truncate text-sm text-neutral-500">
+              <Typography variant="subtitle" class="truncate">
                 {t("settings.app.player.browse_hint")}
-              </p>
+              </Typography>
             }
           >
-            <p class="truncate text-sm text-neutral-500">{playerPath()}</p>
+            <Typography variant="subtitle" class="truncate">
+              {playerPath()}
+            </Typography>
           </Show>
         </div>
         <Button variant="outline" size="sm" onClick={selectPlayer}>
-          {t("common.change")}
+          <Typography as="span">{t("common.change")}</Typography>
         </Button>
       </SectionTable.Content>
       <SectionTable.Footer>
-        <p class="text-xs text-neutral-600">
+        <Typography variant="caption">
           <strong>{t("common.tip")}:</strong>{" "}
           {t("settings.app.player.popular_options")}{" "}
           {players.map((player, i) => (
@@ -72,7 +73,7 @@ export default function PlayerSettings() {
               {i < players.length - 1 && ", "}
             </>
           ))}
-        </p>
+        </Typography>
       </SectionTable.Footer>
     </SectionTable>
   );

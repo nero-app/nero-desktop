@@ -1,3 +1,4 @@
+import { Typography } from "../ui/Typography";
 import type { Episode } from "@nero/plugin-extensions";
 
 type EpisodeCardProps = {
@@ -25,15 +26,19 @@ export default function EpisodeCard(props: EpisodeCardProps) {
           class="absolute inset-0 flex items-center justify-center bg-black/20
             opacity-0 transition-opacity group-hover:opacity-100"
         >
-          <span class="text-sm font-semibold text-white">
+          <Typography variant="subtitle" as="span">
             Ep. {props.episode.number}
-          </span>
+          </Typography>
         </div>
       </div>
 
-      <h3 class="w-full truncate text-center text-sm text-neutral-600">
+      <Typography
+        variant="subtitle"
+        as="span"
+        class="w-full truncate text-center"
+      >
         {props.episode.title}
-      </h3>
+      </Typography>
     </button>
   );
 }

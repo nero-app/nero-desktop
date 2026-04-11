@@ -1,3 +1,4 @@
+import { Typography } from "../ui/Typography";
 import type { Series } from "@nero/plugin-extensions";
 import { A } from "@solidjs/router";
 import { Show } from "solid-js";
@@ -19,9 +20,9 @@ export default function SeriesCard(props: { series: Series }) {
           alt={props.series.title}
         />
       </Show>
-      <h3 class="truncate text-center text-sm font-medium">
+      <Typography variant="subtitle" class="truncate text-center">
         {props.series.title}
-      </h3>
+      </Typography>
     </A>
   );
 }

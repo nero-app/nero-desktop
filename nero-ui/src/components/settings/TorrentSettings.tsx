@@ -3,6 +3,7 @@ import { appState, setAppState } from "../../store/appState";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
 import { Toggle } from "../ui/Toggle";
+import { Typography } from "../ui/Typography";
 import {
   enableTorrentSupport,
   disableTorrentSupport,
@@ -55,32 +56,33 @@ export default function TorrentSettings() {
       <SectionTable.Content class="flex flex-col gap-4">
         <div class="flex items-center justify-between">
           <div class="min-w-0">
-            <p class="truncate font-medium text-neutral-900">
+            <Typography variant="h4">
               {t("settings.app.torrent.enable_label")}
-            </p>
-            <p class="truncate text-sm text-neutral-500">
+            </Typography>
+            <Typography variant="subtitle" class="truncate">
               {t("settings.app.torrent.enable_description")}
-            </p>
+            </Typography>
           </div>
           <Toggle checked={enabled()} onChange={handleToggle} />
         </div>
         <Show when={enabled()}>
           <div class="flex items-center justify-between gap-4">
             <div class="min-w-0">
-              <p class="font-medium text-neutral-900">
+              <Typography variant="h4">
                 {t("settings.app.torrent.output_folder_label")}
-              </p>
-              <p class="truncate text-sm text-neutral-800">
+              </Typography>
+              <Typography variant="subtitle" class="truncate">
                 {outputFolder() || defaultFolder()}
-              </p>
+              </Typography>
             </div>
             <div class="flex shrink-0 gap-2">
               <Button variant="outline" size="sm" onClick={selectOutputFolder}>
-                {t("common.change")}
+                <Typography as="span">{t("common.change")}</Typography>
               </Button>
+
               <Show when={outputFolder()}>
                 <Button variant="outline" size="sm" onClick={resetOutputFolder}>
-                  {t("common.reset")}
+                  <Typography as="span">{t("common.reset")}</Typography>
                 </Button>
               </Show>
             </div>

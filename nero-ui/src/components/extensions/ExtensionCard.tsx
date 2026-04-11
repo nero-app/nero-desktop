@@ -1,4 +1,5 @@
 import { t } from "../../lib/i18n";
+import { Typography } from "../ui/Typography";
 import type { Extension } from "@nero/plugin-extensions";
 import { BlocksIcon } from "lucide-solid";
 import { Show } from "solid-js";
@@ -28,14 +29,16 @@ export function ExtensionCard(props: ExtensionCardProps) {
       onClick={props.onClick}
     >
       <BlocksIcon class="shrink-0 text-neutral-400" />
-      <div class="min-w-0 flex-1">
-        <h3 class="text-md truncate font-medium text-neutral-900">
+      <span class="block min-w-0 flex-1">
+        <Typography as="span" class="block truncate">
           {props.extension.metadata.name ?? props.extension.filePath}
-        </h3>
+        </Typography>
         <Show when={subtitle()}>
-          <p class="truncate text-sm text-neutral-500">{subtitle()}</p>
+          <Typography variant="caption" class="block truncate">
+            {subtitle()}
+          </Typography>
         </Show>
-      </div>
+      </span>
     </button>
   );
 }
