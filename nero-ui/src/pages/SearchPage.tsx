@@ -2,28 +2,14 @@ import SeriesCard from "../components/media/SeriesCard";
 import { Input } from "../components/ui/Input";
 import { SidebarLayout } from "../layouts/SidebarLayout";
 import { t } from "../lib/i18n";
-import { createInfiniteResource } from "../primitives/createInfiniteResource";
+import { createFilters } from "../primitives/createFilters";
+import { createSearch } from "../primitives/createSearch";
 import { createSentinel } from "../primitives/createSentinel";
-import { appState } from "../store/appState";
 import { Accordion, Checkbox } from "@kobalte/core";
 import type { CheckboxRootProps } from "@kobalte/core/checkbox";
-import type {
-  Filter,
-  FilterCategory,
-  SearchFilter,
-  Series,
-} from "@nero/plugin-extensions";
+import type { Filter, FilterCategory } from "@nero/plugin-extensions";
 import { SearchIcon, CheckIcon } from "lucide-solid";
-import {
-  For,
-  type JSX,
-  Match,
-  Show,
-  Switch,
-  createResource,
-  createSignal,
-  splitProps,
-} from "solid-js";
+import { For, type JSX, Match, Show, Switch, splitProps } from "solid-js";
 
 type FilterItemProps = CheckboxRootProps & {
   filter: Filter;
@@ -93,64 +79,18 @@ function FilterCategoryList(props: {
 }
 
 export default function SearchPage() {
-  const [filterCategories] = createResource(() => {
-    const extension = appState.extension;
-    if (!extension) throw new Error("No extension loaded");
-    return extension.getFilters();
-  });
-
-  const [searchFilters, setSearchFilters] = createSignal<SearchFilter[]>([]);
-  const [query, setQuery] = createSignal("");
-
-  const [series, { loadNext, reset }] = createInfiniteResource<Series>(
-    async (page) => {
-      const extension = appState.extension;
-      if (!extension) throw new Error("No extension loaded");
-      const result = await extension.search(query(), page, searchFilters());
-      return {
-        items: result.items,
-        hasMore: result.hasNextPage,
-      };
-    },
-  );
+  const { filterCategories } = createFilters();
+  const {
+    query,
+    setQuery,
+    series,
+    loadNext,
+    reset,
+    isFilterSelected,
+    toggleFilter,
+  } = createSearch();
 
   const sentinel = createSentinel(() => loadNext());
-
-  function isFilterSelected(categoryId: string, filterId: string) {
-    return (
-      searchFilters()
-        .find((sf) => sf.id === categoryId)
-        ?.values.includes(filterId) ?? false
-    );
-  }
-
-  function toggleFilter(categoryId: string, filterId: string) {
-    setSearchFilters((prev) => {
-      const existing = prev.find((sf) => sf.id === categoryId);
-
-      if (!existing) {
-        return [...prev, { id: categoryId, values: [filterId] }];
-      }
-
-      const hasFilter = existing.values.includes(filterId);
-
-      if (hasFilter) {
-        const newValues = existing.values.filter((v) => v !== filterId);
-        if (newValues.length === 0) {
-          return prev.filter((sf) => sf.id !== categoryId);
-        }
-        return prev.map((sf) =>
-          sf.id === categoryId ? { ...sf, values: newValues } : sf,
-        );
-      } else {
-        return prev.map((sf) =>
-          sf.id === categoryId
-            ? { ...sf, values: [...sf.values, filterId] }
-            : sf,
-        );
-      }
-    });
-  }
 
   function handleSearchSubmit(e: Event) {
     e.preventDefault();

@@ -1,19 +1,29 @@
 import { t } from "../../lib/i18n";
+import { createVideoSelector } from "../../primitives/createVideoSelector";
 import { appState } from "../../store/appState";
 import { Button } from "../ui/Button";
 import { Dialog } from "../ui/Dialog";
 import { Typography } from "../ui/Typography";
-import type { Episode } from "@nero/plugin-extensions";
-import { invoke } from "@tauri-apps/api/core";
+import type { Episode, Video } from "@nero/plugin-extensions";
 import { LoaderCircleIcon } from "lucide-solid";
-import {
-  createResource,
-  createSignal,
-  For,
-  Match,
-  Switch,
-  type ComponentProps,
-} from "solid-js";
+import { For, Match, Switch, type ComponentProps } from "solid-js";
+
+function VideoCard(props: { video: Video; onClick?: (video: Video) => void }) {
+  return (
+    <Button
+      class="w-full"
+      variant="outline"
+      onClick={() => props.onClick?.(props.video)}
+    >
+      <Typography variant="body" as="span">
+        {props.video.server}
+      </Typography>
+      <Typography variant="caption" as="span">
+        {props.video.resolution.join("x")}
+      </Typography>
+    </Button>
+  );
+}
 
 type VideoSelectorProps = ComponentProps<typeof Dialog> & {
   seriesId: string;
@@ -22,37 +32,10 @@ type VideoSelectorProps = ComponentProps<typeof Dialog> & {
 };
 
 export default function VideoSelector(props: VideoSelectorProps) {
-  const [videosResource] = createResource(
-    () => {
-      if (!appState.config.playerPath) return undefined;
-      return {
-        id: props.episode.id,
-        num: props.episode.number,
-        ext: appState.extension,
-      };
-    },
-    async (source) => {
-      if (!source.ext) throw new Error("No extension loaded");
-      return source.ext.getSeriesVideos(props.seriesId, source.id, source.num);
-    },
+  const { videosResource, launching, selectVideo } = createVideoSelector(
+    () => props.seriesId,
+    () => props.episode,
   );
-
-  const [launching, setLaunching] = createSignal(false);
-
-  const selectVideo = async (url: string) => {
-    const playerPath = appState.config.playerPath;
-    if (!playerPath) return;
-    try {
-      setLaunching(true);
-      await invoke("open_video_player", {
-        playerPath: appState.config.playerPath!,
-        url,
-      });
-    } catch (error) {
-      setLaunching(false);
-      alert(`${error}`);
-    }
-  };
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
@@ -107,17 +90,10 @@ export default function VideoSelector(props: VideoSelectorProps) {
               <For each={videosResource()}>
                 {(video) => (
                   <li>
-                    <Button
-                      variant="outline"
+                    <VideoCard
+                      video={video}
                       onClick={() => selectVideo(video.url)}
-                    >
-                      <Typography variant="body" as="span">
-                        {video.server}
-                      </Typography>
-                      <Typography variant="caption" as="span">
-                        {video.resolution.join("x")}
-                      </Typography>
-                    </Button>
+                    />
                   </li>
                 )}
               </For>
