@@ -1,6 +1,5 @@
 import { t } from "../../lib/i18n";
-import { createMutation } from "../../primitives/createMutation";
-import { setAppState } from "../../store/appState";
+import { createExtensionLoader } from "../../primitives/createExtensionLoader";
 import { Button } from "../ui/Button";
 import { Dialog } from "../ui/Dialog";
 import { Input } from "../ui/Input";
@@ -14,7 +13,6 @@ import {
 import { open } from "@tauri-apps/plugin-dialog";
 import {
   createResource,
-  createSignal,
   Show,
   type ComponentProps,
   splitProps,
@@ -27,39 +25,17 @@ type ExtensionLoadDialogProps = ComponentProps<typeof Dialog> & {
 export function ExtensionLoadDialog(props: ExtensionLoadDialogProps) {
   const [local, dialogProps] = splitProps(props, ["filePath"]);
 
-  const [cacheDir, setCacheDir] = createSignal<string | null>(null);
-  const [maxCacheSize, setMaxCacheSize] = createSignal<string>("0");
-
   const [metadata] = createResource(
     () => local.filePath,
     (file) => Extension.getMetadata(file) as Promise<Metadata>,
   );
 
+  const { cache, load } = createExtensionLoader(() => local.filePath);
+
   const pickCacheDir = async () => {
     const selected = await open({ directory: true, multiple: false });
-    if (selected) setCacheDir(selected);
+    if (selected) cache.setDir(selected);
   };
-
-  const isMaxCacheExceeded = () => {
-    const raw = maxCacheSize().trim();
-    return raw ? Number(raw) > MAX_CACHE_SIZE_MB : false;
-  };
-
-  const maxCacheSizeBytes = () => {
-    const raw = maxCacheSize().trim();
-    const mb = Number(raw);
-    return raw && mb > 0 ? mb * 1024 * 1024 : undefined;
-  };
-
-  const [loadMutation, mutate] = createMutation(async () => {
-    const loadedExtension = await Extension.load(local.filePath, {
-      cacheDir: cacheDir()!,
-      maxCacheSize: maxCacheSizeBytes(),
-    });
-    setAppState("extension", loadedExtension);
-    dialogProps.onOpenChange?.(false);
-    return loadedExtension;
-  });
 
   const title = () => {
     if (metadata.loading) return t("common.loading");
@@ -91,7 +67,7 @@ export function ExtensionLoadDialog(props: ExtensionLoadDialogProps) {
                 placeholder={t(
                   "settings.extensions.options.cache_dir_placeholder",
                 )}
-                value={cacheDir() ?? ""}
+                value={cache.dir() ?? ""}
               />
               <Button variant="outline" onClick={pickCacheDir}>
                 <Typography as="span">{t("common.browse")}</Typography>
@@ -108,11 +84,11 @@ export function ExtensionLoadDialog(props: ExtensionLoadDialogProps) {
               type="number"
               min={0}
               max={MAX_CACHE_SIZE_MB}
-              value={maxCacheSize()}
-              onInput={(e) => setMaxCacheSize(e.currentTarget.value)}
+              value={cache.maxSize()}
+              onInput={(e) => cache.setMaxSize(Number(e.currentTarget.value))}
             />
             <Show
-              when={isMaxCacheExceeded()}
+              when={cache.isExceeded()}
               fallback={
                 <Typography variant="caption">
                   {t("settings.extensions.options.max_cache_size_hint")} (max{" "}
@@ -120,31 +96,33 @@ export function ExtensionLoadDialog(props: ExtensionLoadDialogProps) {
                 </Typography>
               }
             >
-              {/* TODO: error variant */}
               <Typography variant="caption">
                 {t("settings.extensions.options.max_cache_size_exceeded")}
               </Typography>
             </Show>
           </div>
 
-          <Show when={loadMutation.error}>
+          <Show when={load.mutation.error}>
             <Typography class="text-red-500">
-              {loadMutation.error?.message ?? t("common.error_hint")}
+              {load.mutation.error?.message ?? t("common.error_hint")}
             </Typography>
           </Show>
 
           <Button
             class="mt-auto w-full"
-            onClick={() => mutate(local.filePath)}
+            onClick={() =>
+              load.trigger().then(() => dialogProps.onOpenChange?.(false))
+            }
             disabled={
-              !cacheDir() ||
-              isMaxCacheExceeded() ||
+              cache.dir.loading ||
+              !cache.dir() ||
+              cache.isExceeded() ||
               metadata.loading ||
-              loadMutation.loading
+              load.mutation.loading
             }
           >
             <Typography as="span">
-              {loadMutation.loading
+              {load.mutation.loading
                 ? t("common.loading")
                 : t("settings.extensions.load")}
             </Typography>
