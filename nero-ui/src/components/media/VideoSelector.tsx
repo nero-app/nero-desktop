@@ -5,7 +5,6 @@ import { Button } from "../ui/Button";
 import { Dialog } from "../ui/Dialog";
 import { Typography } from "../ui/Typography";
 import type { Episode, Video } from "@nero/plugin-extensions";
-import { LoaderCircleIcon } from "lucide-solid";
 import { For, Match, Switch, type ComponentProps } from "solid-js";
 
 function VideoCard(props: { video: Video; onClick?: (video: Video) => void }) {
@@ -32,7 +31,7 @@ type VideoSelectorProps = ComponentProps<typeof Dialog> & {
 };
 
 export default function VideoSelector(props: VideoSelectorProps) {
-  const { videosResource, launching, selectVideo } = createVideoSelector(
+  const { videosResource, selectVideo } = createVideoSelector(
     () => props.seriesId,
     () => props.episode,
   );
@@ -65,25 +64,6 @@ export default function VideoSelector(props: VideoSelectorProps) {
           </Match>
           <Match when={videosResource.error}>
             <Typography>{videosResource.error.message}</Typography>
-          </Match>
-          <Match when={launching()}>
-            <div
-              class="flex size-full flex-col items-center justify-center gap-3
-                px-4 text-center"
-            >
-              <LoaderCircleIcon
-                size={28}
-                class="animate-spin text-neutral-500"
-              />
-              <div class="flex flex-col gap-2">
-                <Typography variant="h4">
-                  {t("media.player_launching")}
-                </Typography>
-                <Typography variant="caption">
-                  {t("media.player_launching_hint")}
-                </Typography>
-              </div>
-            </div>
           </Match>
           <Match when={videosResource()}>
             <ul class="flex flex-col gap-1.5 overflow-y-auto px-4">
