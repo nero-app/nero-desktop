@@ -3,7 +3,13 @@ import { Dialog } from "../ui/Dialog";
 import { Typography } from "../ui/Typography";
 import { ExtensionMetaPanel } from "./ExtensionMetaPanel";
 import { Extension, type Metadata } from "@nero/plugin-extensions";
-import { createResource, type ComponentProps, splitProps } from "solid-js";
+import {
+  createResource,
+  type ComponentProps,
+  splitProps,
+  ErrorBoundary,
+  Show,
+} from "solid-js";
 
 type ExtensionInfoDialogProps = ComponentProps<typeof Dialog> & {
   extension: Extension;
@@ -29,10 +35,18 @@ export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
       />
 
       <Dialog.Content class="grid grid-cols-[1fr_auto_1fr] gap-4 p-4">
-        <ExtensionMetaPanel
-          filePath={local.extension.filePath}
-          metadata={metadata}
-        />
+        <ErrorBoundary
+          fallback={(err) => <Typography>{err.message}</Typography>}
+        >
+          <Show when={metadata()}>
+            {(metadata) => (
+              <ExtensionMetaPanel
+                filePath={local.extension.filePath}
+                metadata={metadata()}
+              />
+            )}
+          </Show>
+        </ErrorBoundary>
 
         <hr class="h-full border border-neutral-200" />
 

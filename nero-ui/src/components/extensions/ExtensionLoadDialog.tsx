@@ -16,6 +16,7 @@ import {
   Show,
   type ComponentProps,
   splitProps,
+  ErrorBoundary,
 } from "solid-js";
 
 type ExtensionLoadDialogProps = ComponentProps<typeof Dialog> & {
@@ -47,7 +48,18 @@ export function ExtensionLoadDialog(props: ExtensionLoadDialogProps) {
       <Dialog.Header title={title()} />
 
       <Dialog.Content class="grid grid-cols-[1fr_auto_1fr] gap-4 p-4">
-        <ExtensionMetaPanel filePath={local.filePath} metadata={metadata} />
+        <ErrorBoundary
+          fallback={(err) => <Typography>{err.message}</Typography>}
+        >
+          <Show when={metadata()}>
+            {(metadata) => (
+              <ExtensionMetaPanel
+                filePath={local.filePath}
+                metadata={metadata()}
+              />
+            )}
+          </Show>
+        </ErrorBoundary>
 
         <hr class="h-full border border-neutral-200" />
 
