@@ -69,7 +69,7 @@ export default function SeriesPage() {
         </Switch>
       </MediaLayout.Media>
 
-      <MediaLayout.Content as="article" class="flex-col gap-4">
+      <MediaLayout.Content as="article" class="flex flex-col gap-4">
         <Switch>
           <Match when={seriesQuery.loading}>
             <Typography>{t("common.loading")}</Typography>
