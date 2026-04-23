@@ -1,6 +1,7 @@
 import { t } from "../lib/i18n";
 import { appState } from "../store/appState";
 import { createInfiniteResource } from "./createInfiniteResource";
+import { createSentinel } from "./createSentinel";
 import type { Episode } from "@nero/plugin-extensions";
 import { createResource } from "solid-js";
 
@@ -20,5 +21,7 @@ export function createSeries(seriesId: () => string) {
     },
   );
 
-  return { seriesQuery, episodesQuery, loadNext };
+  const sentinel = createSentinel(() => loadNext());
+
+  return { seriesQuery, episodesQuery, sentinel };
 }

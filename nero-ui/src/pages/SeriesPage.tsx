@@ -4,7 +4,6 @@ import { Button } from "../components/ui/Button";
 import { Typography } from "../components/ui/Typography";
 import { MediaLayout } from "../layouts/MediaLayout";
 import { t } from "../lib/i18n";
-import { createSentinel } from "../primitives/createSentinel";
 import { createSeries } from "../primitives/createSeries";
 import { appState } from "../store/appState";
 import { Tabs } from "@kobalte/core/tabs";
@@ -27,11 +26,10 @@ export default function SeriesPage() {
     null,
   );
 
-  const { seriesQuery, episodesQuery, loadNext } = createSeries(
+  const { seriesQuery, episodesQuery, sentinel } = createSeries(
     () => params.seriesId,
   );
   const firstEpisode = () => episodesQuery()?.[0] ?? null;
-  const sentinel = createSentinel(() => loadNext());
 
   const handleEpisodeClick = (episode: Episode) => {
     setSelectedEpisode(episode);
