@@ -1,5 +1,6 @@
 import SeriesCard from "../components/media/SeriesCard";
 import { Input } from "../components/ui/Input";
+import { Typography } from "../components/ui/Typography";
 import { SidebarLayout } from "../layouts/SidebarLayout";
 import { t } from "../lib/i18n";
 import { createFilters } from "../primitives/createFilters";
@@ -88,10 +89,10 @@ export default function SearchPage() {
       <SidebarLayout.Main as="section">
         <Switch>
           <Match when={series.loading && series().length === 0}>
-            <p class="animate-pulse text-gray-500">{t("common.loading")}</p>
+            <Typography>{t("common.loading")}</Typography>
           </Match>
           <Match when={series.error}>
-            <p class="text-red-500">{series.error.message}</p>
+            <Typography>{series.error.message}</Typography>
           </Match>
           <Match when={series().length > 0}>
             <ul class="grid grid-cols-4">
@@ -104,12 +105,12 @@ export default function SearchPage() {
               </For>
               <div ref={sentinel} />
               <Show when={series.loading}>
-                <p class="animate-pulse text-gray-500">{t("common.loading")}</p>
+                <Typography>{t("common.loading")}</Typography>
               </Show>
             </ul>
           </Match>
           <Match when={!series.loading && series().length === 0}>
-            <p class="text-gray-400">{t("media.no_results")}</p>
+            <Typography>{t("media.no_results")}</Typography>
           </Match>
         </Switch>
       </SidebarLayout.Main>
@@ -134,12 +135,12 @@ export default function SearchPage() {
           />
         </form>
 
-        <Switch fallback={<p class="text-gray-400">{t("filters.empty")}</p>}>
+        <Switch fallback={<Typography>{t("filters.empty")}</Typography>}>
           <Match when={filters.categories.loading}>
-            <p class="animate-pulse text-gray-500">{t("common.loading")}</p>
+            <Typography>{t("common.loading")}</Typography>
           </Match>
           <Match when={filters.categories.error}>
-            <p class="text-red-500">{filters.categories.error.message}</p>
+            <Typography>{filters.categories.error.message}</Typography>
           </Match>
           <Match when={filters.categories()}>
             {(cats) => (
