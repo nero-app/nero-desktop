@@ -4,7 +4,6 @@ import { SidebarLayout } from "../layouts/SidebarLayout";
 import { t } from "../lib/i18n";
 import { createFilters } from "../primitives/createFilters";
 import { createSearch } from "../primitives/createSearch";
-import { createSentinel } from "../primitives/createSentinel";
 import { Accordion, Checkbox } from "@kobalte/core";
 import type { CheckboxRootProps } from "@kobalte/core/checkbox";
 import type { Filter, FilterCategory } from "@nero/plugin-extensions";
@@ -79,23 +78,10 @@ function FilterCategoryList(props: {
 }
 
 export default function SearchPage() {
-  const { filterCategories } = createFilters();
-  const {
-    query,
-    setQuery,
-    series,
-    loadNext,
-    reset,
-    isFilterSelected,
-    toggleFilter,
-  } = createSearch();
-
-  const sentinel = createSentinel(() => loadNext());
-
-  function handleSearchSubmit(e: Event) {
-    e.preventDefault();
-    reset();
-  }
+  const filters = createFilters();
+  const { series, sentinel, query, setQuery, reset } = createSearch(
+    filters.selected,
+  );
 
   return (
     <SidebarLayout>
@@ -104,28 +90,24 @@ export default function SearchPage() {
           <Match when={series.loading && series().length === 0}>
             <p class="animate-pulse text-gray-500">{t("common.loading")}</p>
           </Match>
-
           <Match when={series.error}>
             <p class="text-red-500">{series.error.message}</p>
           </Match>
           <Match when={series().length > 0}>
             <ul class="grid grid-cols-4">
               <For each={series()}>
-                {(series) => (
+                {(s) => (
                   <li>
-                    <SeriesCard series={series} />
+                    <SeriesCard series={s} />
                   </li>
                 )}
               </For>
-
               <div ref={sentinel} />
-
               <Show when={series.loading}>
                 <p class="animate-pulse text-gray-500">{t("common.loading")}</p>
               </Show>
             </ul>
           </Match>
-
           <Match when={!series.loading && series().length === 0}>
             <p class="text-gray-400">{t("media.no_results")}</p>
           </Match>
@@ -135,7 +117,10 @@ export default function SearchPage() {
       <SidebarLayout.Sidebar as="aside">
         <form
           class="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2"
-          onSubmit={handleSearchSubmit}
+          onSubmit={(e) => {
+            e.preventDefault();
+            reset();
+          }}
         >
           <SearchIcon />
           <Input
@@ -150,20 +135,20 @@ export default function SearchPage() {
         </form>
 
         <Switch fallback={<p class="text-gray-400">{t("filters.empty")}</p>}>
-          <Match when={filterCategories.loading}>
+          <Match when={filters.categories.loading}>
             <p class="animate-pulse text-gray-500">{t("common.loading")}</p>
           </Match>
-          <Match when={filterCategories.error}>
-            <p class="text-red-500">{filterCategories.error.message}</p>
+          <Match when={filters.categories.error}>
+            <p class="text-red-500">{filters.categories.error.message}</p>
           </Match>
-          <Match when={filterCategories()}>
-            {(categories) => (
-              <FilterCategoryList categories={categories()}>
+          <Match when={filters.categories()}>
+            {(cats) => (
+              <FilterCategoryList categories={cats()}>
                 {(category, filter) => (
                   <FilterItem
                     filter={filter}
-                    checked={isFilterSelected(category.id, filter.id)}
-                    onChange={() => toggleFilter(category.id, filter.id)}
+                    checked={filters.isSelected(category.id, filter.id)}
+                    onChange={() => filters.toggle(category.id, filter.id)}
                   />
                 )}
               </FilterCategoryList>
