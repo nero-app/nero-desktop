@@ -5,7 +5,7 @@ import { createResource, createSignal } from "solid-js";
 
 export function createFilters() {
   const [categories] = createResource(() => {
-    const extension = appState.extension;
+    const extension = appState.getters.extension();
     if (!extension) throw new Error(t("common.no_extension"));
     return extension.getFilters();
   });

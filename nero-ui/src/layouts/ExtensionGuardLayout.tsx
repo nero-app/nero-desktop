@@ -6,10 +6,10 @@ export default function ExtensionGuardLayout(props: ParentProps) {
   const navigate = useNavigate();
 
   createEffect(() => {
-    if (!appState.extension) {
+    if (!appState.getters.extension()) {
       navigate("/settings/extensions", { replace: true });
     }
   });
 
-  return <Show when={appState.extension}>{props.children}</Show>;
+  return <Show when={appState.getters.extension()}>{props.children}</Show>;
 }

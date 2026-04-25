@@ -52,7 +52,7 @@ export default function VideoSelector(props: VideoSelectorProps) {
         </div>
 
         <Switch>
-          <Match when={!appState.config.playerPath}>
+          <Match when={!appState.getters.playerPath()}>
             <div class="flex items-center justify-center px-4">
               <Typography>{t("media.player_not_configured")}</Typography>
             </div>

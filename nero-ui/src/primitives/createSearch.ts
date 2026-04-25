@@ -9,7 +9,7 @@ export function createSearch(filters: Accessor<SearchFilter[]>) {
   const [query, setQuery] = createSignal("");
 
   const [series, { loadNext, reset }] = createInfiniteResource(async (page) => {
-    const extension = appState.extension;
+    const extension = appState.getters.extension();
     if (!extension) throw new Error(t("common.no_extension"));
     const result = await extension.search(query(), page, filters());
     return { items: result.items, hasMore: result.hasNextPage };

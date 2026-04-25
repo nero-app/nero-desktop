@@ -14,7 +14,7 @@ export default function ExtensionsList() {
   const [selectedFile, setSelectedFile] = createSignal<string | null>(null);
   const [showAddDialog, setShowAddDialog] = createSignal(false);
   const [showInfoDialog, setShowInfoDialog] = createSignal(false);
-  const currentExtension = () => appState.extension;
+  const currentExtension = () => appState.getters.extension();
 
   async function selectExtension() {
     const file = await open({

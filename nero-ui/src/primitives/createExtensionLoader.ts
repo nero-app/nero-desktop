@@ -1,4 +1,4 @@
-import { setAppState } from "../store/appState";
+import { appState } from "../store/appState";
 import { createMutation } from "./createMutation";
 import { Extension, MAX_CACHE_SIZE_MB } from "@nero/plugin-extensions";
 import { appCacheDir } from "@tauri-apps/api/path";
@@ -15,12 +15,10 @@ export function createExtensionLoader(filePath: () => string) {
   };
 
   const [loadMutation, mutate] = createMutation<Extension, void>(async () => {
-    const loaded = await Extension.load(filePath(), {
+    return appState.actions.loadExtension(filePath(), {
       cacheDir: cacheDir()!,
       maxCacheSize: maxCacheSizeBytes(),
     });
-    setAppState("extension", loaded);
-    return loaded;
   });
 
   return {

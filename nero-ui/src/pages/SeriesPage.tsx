@@ -89,7 +89,7 @@ export default function SeriesPage() {
                 </Typography>
                 <A class="truncate underline" href="/settings/extensions">
                   <Typography variant="subtitle" as="span">
-                    {extensionLabel(appState.extension!)}
+                    {extensionLabel(appState.getters.extension()!)}
                   </Typography>
                 </A>
               </div>

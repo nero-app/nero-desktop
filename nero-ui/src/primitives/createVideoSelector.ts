@@ -10,11 +10,11 @@ export function createVideoSelector(
 ) {
   const [videosResource] = createResource(
     () => {
-      if (!appState.config.playerPath) return undefined;
+      if (!appState.getters.playerPath()) return undefined;
       return {
         id: episode().id,
         num: episode().number,
-        ext: appState.extension,
+        ext: appState.getters.extension(),
       };
     },
     async (source) => {
@@ -24,7 +24,7 @@ export function createVideoSelector(
   );
 
   const selectVideo = async (url: string) => {
-    const playerPath = appState.config.playerPath;
+    const playerPath = appState.getters.playerPath();
     if (!playerPath) return;
     try {
       await invoke("open_video_player", { playerPath, url });

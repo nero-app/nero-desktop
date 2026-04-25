@@ -7,14 +7,14 @@ import { createResource } from "solid-js";
 
 export function createSeries(seriesId: () => string) {
   const [seriesQuery] = createResource(async () => {
-    const extension = appState.extension;
+    const extension = appState.getters.extension();
     if (!extension) throw new Error(t("common.no_extension"));
     return extension.getSeriesInfo(seriesId());
   });
 
   const [episodesQuery, { loadNext }] = createInfiniteResource<Episode>(
     async (page) => {
-      const extension = appState.extension;
+      const extension = appState.getters.extension();
       if (!extension) throw new Error(t("common.no_extension"));
       const result = await extension.getSeriesEpisodes(seriesId(), page);
       return { items: result.items, hasMore: result.hasNextPage };

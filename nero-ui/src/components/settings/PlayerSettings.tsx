@@ -1,5 +1,5 @@
 import { t } from "../../lib/i18n";
-import { appState, setAppState } from "../../store/appState";
+import { appState } from "../../store/appState";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
 import { Typography } from "../ui/Typography";
@@ -24,14 +24,14 @@ function PlayerLink(props: { label: string; href: string }) {
 }
 
 export default function PlayerSettings() {
-  const playerPath = () => appState.config.playerPath;
+  const playerPath = () => appState.getters.playerPath();
 
   async function selectPlayer() {
     const file = await open({
       title: t("settings.app.player.select_title"),
     });
     if (file) {
-      setAppState("config", "playerPath", file);
+      appState.actions.setPlayerPath(file);
     }
   }
 

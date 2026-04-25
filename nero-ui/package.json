@@ -11,6 +11,7 @@
   "dependencies": {
     "@kobalte/core": "0.13.11",
     "@nero/plugin-extensions": "workspace:*",
+    "@solid-primitives/flux-store": "0.1.1",
     "@solid-primitives/i18n": "2.2.1",
     "@solidjs/router": "0.15.4",
     "@tauri-apps/plugin-dialog": "2.4.2",

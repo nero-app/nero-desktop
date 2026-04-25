@@ -1,34 +1,21 @@
 import { t } from "../../lib/i18n";
-import { appState, setAppState } from "../../store/appState";
+import { appState } from "../../store/appState";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
 import { Toggle } from "../ui/Toggle";
 import { Typography } from "../ui/Typography";
-import {
-  enableTorrentSupport,
-  disableTorrentSupport,
-} from "@nero/plugin-extensions";
 import { appCacheDir } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Show, createResource } from "solid-js";
 
 export default function TorrentSettings() {
-  const enabled = () => appState.config.torrentEnabled;
-  const outputFolder = () => appState.config.torrentOutputFolder;
+  const enabled = () => appState.getters.torrentEnabled();
+  const outputFolder = () => appState.getters.torrentOutputFolder();
   const [defaultFolder] = createResource(appCacheDir);
 
-  async function applyFolder(path: string) {
-    await disableTorrentSupport();
-    await enableTorrentSupport(path);
-  }
-
   async function handleToggle(value: boolean) {
-    setAppState("config", "torrentEnabled", value);
-    if (value) {
-      await enableTorrentSupport(outputFolder() || (await appCacheDir()));
-    } else {
-      await disableTorrentSupport();
-    }
+    if (value) await appState.actions.enableTorrent(outputFolder());
+    else await appState.actions.disableTorrent();
   }
 
   async function selectOutputFolder() {
@@ -36,15 +23,11 @@ export default function TorrentSettings() {
       title: t("settings.app.torrent.output_folder_title"),
       directory: true,
     });
-    if (dir) {
-      setAppState("config", "torrentOutputFolder", dir);
-      if (enabled()) await applyFolder(dir);
-    }
+    if (dir) await appState.actions.enableTorrent(dir);
   }
 
   async function resetOutputFolder() {
-    setAppState("config", "torrentOutputFolder", null);
-    if (enabled()) await applyFolder(await appCacheDir());
+    await appState.actions.enableTorrent(null);
   }
 
   return (
