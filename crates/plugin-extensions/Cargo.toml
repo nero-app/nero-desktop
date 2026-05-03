@@ -12,5 +12,7 @@ libnero = { git = "https://github.com/nero-app/libnero.git", rev = "84ef1ac", fe
     "torrent",
 ] }
 reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 tauri = { version = "2", default-features = false }
 tracing = { workspace = true }

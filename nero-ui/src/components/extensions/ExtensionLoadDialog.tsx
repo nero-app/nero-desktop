@@ -6,7 +6,7 @@ import { Input } from "../ui/Input";
 import { Typography } from "../ui/Typography";
 import { ExtensionMetaPanel } from "./ExtensionMetaPanel";
 import {
-  Extension,
+  getExtensionMetadata,
   MAX_CACHE_SIZE_MB,
   type Metadata,
 } from "@nero/plugin-extensions";
@@ -28,7 +28,7 @@ export function ExtensionLoadDialog(props: ExtensionLoadDialogProps) {
 
   const [metadata] = createResource(
     () => local.filePath,
-    (file) => Extension.getMetadata(file) as Promise<Metadata>,
+    (file) => getExtensionMetadata(file) as Promise<Metadata>,
   );
 
   const { cache, load } = createExtensionLoader(() => local.filePath);

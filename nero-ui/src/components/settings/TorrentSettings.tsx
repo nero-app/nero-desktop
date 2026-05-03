@@ -1,33 +1,42 @@
 import { t } from "../../lib/i18n";
-import { appState } from "../../store/appState";
+import { useExtensionStatus } from "../../providers/ExtensionProvider";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
 import { Toggle } from "../ui/Toggle";
 import { Typography } from "../ui/Typography";
+import {
+  disableTorrentSupport,
+  enableTorrentSupport,
+} from "@nero/plugin-extensions";
 import { appCacheDir } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Show, createResource } from "solid-js";
 
 export default function TorrentSettings() {
-  const enabled = () => appState.getters.torrentEnabled();
-  const outputFolder = () => appState.getters.torrentOutputFolder();
+  const status = useExtensionStatus();
   const [defaultFolder] = createResource(appCacheDir);
 
+  // TODO: Handle errors
   async function handleToggle(value: boolean) {
-    if (value) await appState.actions.enableTorrent(outputFolder());
-    else await appState.actions.disableTorrent();
+    if (value) {
+      await enableTorrentSupport(
+        status().torrentOutputFolder ?? (await appCacheDir()),
+      );
+    } else await disableTorrentSupport();
   }
 
+  // TODO: Handle errors
   async function selectOutputFolder() {
     const dir = await open({
       title: t("settings.app.torrent.output_folder_title"),
       directory: true,
     });
-    if (dir) await appState.actions.enableTorrent(dir);
+    if (dir) await enableTorrentSupport(dir);
   }
 
+  // TODO: Handle errors
   async function resetOutputFolder() {
-    await appState.actions.enableTorrent(null);
+    await enableTorrentSupport(await appCacheDir());
   }
 
   return (
@@ -46,16 +55,16 @@ export default function TorrentSettings() {
               {t("settings.app.torrent.enable_description")}
             </Typography>
           </div>
-          <Toggle checked={enabled()} onChange={handleToggle} />
+          <Toggle checked={status().torrentEnabled} onChange={handleToggle} />
         </div>
-        <Show when={enabled()}>
+        <Show when={status().torrentEnabled}>
           <div class="flex items-center justify-between gap-4">
             <div class="min-w-0">
               <Typography variant="h4">
                 {t("settings.app.torrent.output_folder_label")}
               </Typography>
               <Typography variant="subtitle" class="truncate">
-                {outputFolder() || defaultFolder()}
+                {status().torrentOutputFolder || defaultFolder()}
               </Typography>
             </div>
             <div class="flex shrink-0 gap-2">
@@ -63,7 +72,7 @@ export default function TorrentSettings() {
                 <Typography as="span">{t("common.change")}</Typography>
               </Button>
 
-              <Show when={outputFolder()}>
+              <Show when={status().torrentOutputFolder}>
                 <Button variant="outline" size="sm" onClick={resetOutputFolder}>
                   <Typography as="span">{t("common.reset")}</Typography>
                 </Button>

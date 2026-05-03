@@ -1,11 +1,11 @@
 import { t } from "../../lib/i18n";
 import { Typography } from "../ui/Typography";
-import type { Extension } from "@nero/plugin-extensions";
+import type { ExtensionInfo } from "@nero/plugin-extensions";
 import { BlocksIcon } from "lucide-solid";
 import { Show } from "solid-js";
 
 type ExtensionCardProps = {
-  extension: Extension;
+  extension: ExtensionInfo;
   onClick: () => void;
 };
 

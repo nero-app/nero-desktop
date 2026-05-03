@@ -11,6 +11,7 @@ tauri-build = { version = "2", default-features = false, features = [
 [dependencies]
 anyhow = { workspace = true }
 portpicker = "0.1.1"
+serde = { workspace = true }
 tauri = { version = "2", features = ["config-toml"] }
 tauri-plugin-dialog = "2.4.2"
 tauri-plugin-nero-extensions = { path = "../plugin-extensions" }

@@ -1,36 +1,19 @@
-import { t } from "../lib/i18n";
-import { appState } from "../store/appState";
-import type { Episode } from "@nero/plugin-extensions";
+import { getSeriesVideos, type Episode } from "@nero/plugin-extensions";
 import { invoke } from "@tauri-apps/api/core";
-import { createResource } from "solid-js";
+import { createResource, type Accessor } from "solid-js";
 
 export function createVideoSelector(
-  seriesId: () => string,
-  episode: () => Episode,
+  seriesId: Accessor<string>,
+  episode: Accessor<Episode>,
 ) {
   const [videosResource] = createResource(
-    () => {
-      if (!appState.getters.playerPath()) return undefined;
-      return {
-        id: episode().id,
-        num: episode().number,
-        ext: appState.getters.extension(),
-      };
-    },
-    async (source) => {
-      if (!source.ext) throw new Error(t("common.no_extension"));
-      return source.ext.getSeriesVideos(seriesId(), source.id, source.num);
-    },
+    () => ({ id: episode().id, num: episode().number }),
+    ({ id, num }) => getSeriesVideos(seriesId(), id, num),
   );
 
+  // TODO: Handle errors
   const selectVideo = async (url: string) => {
-    const playerPath = appState.getters.playerPath();
-    if (!playerPath) return;
-    try {
-      await invoke("open_video_player", { playerPath, url });
-    } catch (error) {
-      alert(`${error}`);
-    }
+    await invoke("open_video_player", { url });
   };
 
   return { videosResource, selectVideo };

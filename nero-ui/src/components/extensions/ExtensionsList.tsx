@@ -1,5 +1,5 @@
 import { t } from "../../lib/i18n";
-import { appState } from "../../store/appState";
+import { useExtensionStatus } from "../../providers/ExtensionProvider";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
 import { Typography } from "../ui/Typography";
@@ -11,10 +11,10 @@ import { BlocksIcon } from "lucide-solid";
 import { Match, Show, Switch, createSignal } from "solid-js";
 
 export default function ExtensionsList() {
+  const status = useExtensionStatus();
   const [selectedFile, setSelectedFile] = createSignal<string | null>(null);
   const [showAddDialog, setShowAddDialog] = createSignal(false);
   const [showInfoDialog, setShowInfoDialog] = createSignal(false);
-  const currentExtension = () => appState.getters.extension();
 
   async function selectExtension() {
     const file = await open({
@@ -34,7 +34,7 @@ export default function ExtensionsList() {
   return (
     <SectionTable>
       <SectionTable.Header title={t("settings.extensions.loaded_label")}>
-        <Show when={currentExtension()}>
+        <Show when={status().extension}>
           <Button variant="outline" size="sm" onClick={selectExtension}>
             <Typography as="span">{t("settings.extensions.load")}</Typography>
           </Button>
@@ -43,7 +43,7 @@ export default function ExtensionsList() {
 
       <SectionTable.Content>
         <Show
-          when={currentExtension()}
+          when={status().extension}
           fallback={
             <div class="flex flex-col items-center gap-2 text-center">
               <BlocksIcon class="size-10 text-neutral-300" />
@@ -83,7 +83,7 @@ export default function ExtensionsList() {
         </Match>
         <Match when={showInfoDialog()}>
           <ExtensionInfoDialog
-            extension={currentExtension()!}
+            extension={status().extension!}
             open={showInfoDialog()}
             onOpenChange={(open) => {
               if (!open) setShowInfoDialog(false);

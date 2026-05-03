@@ -5,20 +5,21 @@ import { Typography } from "../components/ui/Typography";
 import { MediaLayout } from "../layouts/MediaLayout";
 import { t } from "../lib/i18n";
 import { createSeries } from "../primitives/createSeries";
-import { appState } from "../store/appState";
+import { useExtensionStatus } from "../providers/ExtensionProvider";
 import { Tabs } from "@kobalte/core/tabs";
-import type { Episode, Extension } from "@nero/plugin-extensions";
+import type { Episode, ExtensionInfo } from "@nero/plugin-extensions";
 import { A, useParams } from "@solidjs/router";
 import { PlayIcon, Share2Icon, ThumbsUpIcon } from "lucide-solid";
 import { Switch, Match, createSignal, Show, For } from "solid-js";
 
-function extensionLabel(extension: Extension) {
+function extensionLabel(extension: ExtensionInfo) {
   const { name, version } = extension.metadata;
   const label = name ?? extension.filePath;
   return version ? `${label}@v${version}` : label;
 }
 
 export default function SeriesPage() {
+  const status = useExtensionStatus();
   const params = useParams<{ seriesId: string }>();
 
   const [isOpen, setIsOpen] = createSignal(false);
@@ -89,7 +90,7 @@ export default function SeriesPage() {
                 </Typography>
                 <A class="truncate underline" href="/settings/extensions">
                   <Typography variant="subtitle" as="span">
-                    {extensionLabel(appState.getters.extension()!)}
+                    {extensionLabel(status().extension!)}
                   </Typography>
                 </A>
               </div>

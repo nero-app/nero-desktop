@@ -1,14 +1,8 @@
-import { t } from "../lib/i18n";
-import { appState } from "../store/appState";
-import type { SearchFilter } from "@nero/plugin-extensions";
+import { getFilters, type SearchFilter } from "@nero/plugin-extensions";
 import { createResource, createSignal } from "solid-js";
 
 export function createFilters() {
-  const [categories] = createResource(() => {
-    const extension = appState.getters.extension();
-    if (!extension) throw new Error(t("common.no_extension"));
-    return extension.getFilters();
-  });
+  const [categories] = createResource(getFilters);
 
   const [selected, setSelected] = createSignal<SearchFilter[]>([]);
 

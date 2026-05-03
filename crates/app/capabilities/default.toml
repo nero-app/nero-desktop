@@ -5,6 +5,7 @@ windows = ["main"]
 permissions = [
     "core:default",
     "dialog:default",
+    "nero-extensions:allow-get-status",
     "nero-extensions:allow-get-extension-metadata",
     "nero-extensions:allow-load-extension",
     "nero-extensions:allow-enable-torrent-support",

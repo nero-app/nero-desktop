@@ -1,6 +1,9 @@
-import { appState } from "../store/appState";
 import { createMutation } from "./createMutation";
-import { Extension, MAX_CACHE_SIZE_MB } from "@nero/plugin-extensions";
+import {
+  loadExtension,
+  MAX_CACHE_SIZE_MB,
+  type ExtensionInfo,
+} from "@nero/plugin-extensions";
 import { appCacheDir } from "@tauri-apps/api/path";
 import { createResource, createSignal } from "solid-js";
 
@@ -14,12 +17,14 @@ export function createExtensionLoader(filePath: () => string) {
     return mb > 0 ? mb * 1024 * 1024 : undefined;
   };
 
-  const [loadMutation, mutate] = createMutation<Extension, void>(async () => {
-    return appState.actions.loadExtension(filePath(), {
-      cacheDir: cacheDir()!,
-      maxCacheSize: maxCacheSizeBytes(),
-    });
-  });
+  const [loadMutation, mutate] = createMutation<ExtensionInfo, void>(
+    async () => {
+      return loadExtension(filePath(), {
+        cacheDir: cacheDir()!,
+        maxCacheSize: maxCacheSizeBytes(),
+      });
+    },
+  );
 
   return {
     cache: {
@@ -30,7 +35,7 @@ export function createExtensionLoader(filePath: () => string) {
       isExceeded: isMaxCacheExceeded,
     },
     load: {
-      trigger: () => mutate() as Promise<Extension>,
+      trigger: () => mutate() as Promise<ExtensionInfo>,
       mutation: loadMutation,
     },
   };

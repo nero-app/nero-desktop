@@ -1,8 +1,9 @@
 import { t } from "../../lib/i18n";
-import { appState } from "../../store/appState";
+import { useAppStatus } from "../../providers/AppProvider";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
 import { Typography } from "../ui/Typography";
+import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Show } from "solid-js";
 
@@ -24,14 +25,15 @@ function PlayerLink(props: { label: string; href: string }) {
 }
 
 export default function PlayerSettings() {
-  const playerPath = () => appState.getters.playerPath();
+  const status = useAppStatus();
 
   async function selectPlayer() {
     const file = await open({
       title: t("settings.app.player.select_title"),
     });
     if (file) {
-      appState.actions.setPlayerPath(file);
+      // TODO: Handle errors
+      invoke("set_player_path", { path: file });
     }
   }
 
@@ -47,7 +49,7 @@ export default function PlayerSettings() {
             {t("settings.app.player.placeholder")}
           </Typography>
           <Show
-            when={playerPath()}
+            when={status().playerPath}
             fallback={
               <Typography variant="subtitle" class="truncate">
                 {t("settings.app.player.browse_hint")}
@@ -55,7 +57,7 @@ export default function PlayerSettings() {
             }
           >
             <Typography variant="subtitle" class="truncate">
-              {playerPath()}
+              {status().playerPath}
             </Typography>
           </Show>
         </div>

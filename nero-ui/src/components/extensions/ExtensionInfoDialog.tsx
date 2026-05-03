@@ -2,7 +2,11 @@ import { t } from "../../lib/i18n";
 import { Dialog } from "../ui/Dialog";
 import { Typography } from "../ui/Typography";
 import { ExtensionMetaPanel } from "./ExtensionMetaPanel";
-import { Extension, type Metadata } from "@nero/plugin-extensions";
+import {
+  getExtensionMetadata,
+  type ExtensionInfo,
+  type Metadata,
+} from "@nero/plugin-extensions";
 import {
   createResource,
   type ComponentProps,
@@ -12,7 +16,7 @@ import {
 } from "solid-js";
 
 type ExtensionInfoDialogProps = ComponentProps<typeof Dialog> & {
-  extension: Extension;
+  extension: ExtensionInfo;
 };
 
 export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
@@ -20,7 +24,7 @@ export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
 
   const [metadata] = createResource(
     () => local.extension.filePath,
-    (file) => Extension.getMetadata(file) as Promise<Metadata>,
+    (file) => getExtensionMetadata(file) as Promise<Metadata>,
   );
 
   const options = () => local.extension.options;

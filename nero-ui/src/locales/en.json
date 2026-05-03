@@ -1,6 +1,5 @@
 {
   "common": {
-    "no_extension": "No extension loaded",
     "loading": "Loading...",
     "error_title": "Whoops...",
     "error_hint": "Something went wrong.",
