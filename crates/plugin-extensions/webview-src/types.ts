@@ -25,8 +25,6 @@ export interface ExtensionInfo {
 
 export interface PluginStatus {
   extension: ExtensionInfo | null;
-  torrentEnabled: boolean;
-  torrentOutputFolder: string | null;
 }
 
 export interface Series {

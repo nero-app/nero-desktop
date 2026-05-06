@@ -1,6 +1,5 @@
 import LanguageSettings from "../components/settings/LanguageSettings";
 import PlayerSettings from "../components/settings/PlayerSettings";
-import TorrentSettings from "../components/settings/TorrentSettings";
 import { Typography } from "../components/ui/Typography";
 import { t } from "../lib/i18n";
 
@@ -13,7 +12,6 @@ export default function AppSettingsPage() {
       </header>
       <LanguageSettings />
       <PlayerSettings />
-      <TorrentSettings />
     </div>
   );
 }
