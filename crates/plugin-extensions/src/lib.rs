@@ -2,7 +2,7 @@ mod extensions;
 
 use std::{net::SocketAddr, sync::Arc};
 
-use libnero::Nero;
+use libnero::{Extension, ExtensionHost};
 use librqbit::Session;
 use nero_processor::{Processor, torrent::RqbitTorrentBackend};
 use reqwest::Client;
@@ -18,6 +18,7 @@ use tauri::{AppHandle, Emitter, Result, State, async_runtime::RwLock};
 #[serde(rename_all = "camelCase")]
 struct ExtensionInfo {
     file_path: String,
+
     metadata: serde_json::Value,
     cache_dir: String,
     max_cache_size: Option<u64>,
@@ -30,14 +31,16 @@ struct PluginStatus {
 }
 
 struct PluginState {
-    nero: Nero,
+    host: ExtensionHost,
+    extension: RwLock<Option<Extension>>,
     status: RwLock<PluginStatus>,
 }
 
 impl PluginState {
-    fn new(nero: Nero) -> Self {
+    fn new(host: ExtensionHost) -> Self {
         Self {
-            nero,
+            host,
+            extension: Default::default(),
             status: Default::default(),
         }
     }
@@ -87,10 +90,10 @@ impl Builder {
                         },
                     );
 
-                    let nero = Nero::new(processor);
+                    let nero = ExtensionHost::new(processor);
                     let state = PluginState::new(nero);
 
-                    let processor = state.nero.processor().clone();
+                    let processor = state.host.processor().clone();
                     tauri::async_runtime::spawn(async move {
                         processor
                             .run()

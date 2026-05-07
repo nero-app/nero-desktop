@@ -8,11 +8,12 @@ links = "tauri-plugin-nero-extensions"
 tauri-plugin = { version = "2.5.1", features = ["build"] }
 
 [dependencies]
-libnero = { git = "https://github.com/nero-app/libnero.git", rev = "5348dd1", features = [
+anyhow.workspace = true
+libnero = { git = "https://github.com/nero-app/libnero.git", rev = "95935cc", features = [
     "torrent",
 ] }
 librqbit = "8.1.1"
-nero-processor = { git = "https://github.com/nero-app/libnero.git", rev = "5348dd1", features = [
+nero-processor = { git = "https://github.com/nero-app/libnero.git", rev = "95935cc", features = [
     "torrent",
     "torrent-librqbit",
 ] }
