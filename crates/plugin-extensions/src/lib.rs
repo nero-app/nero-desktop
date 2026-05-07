@@ -2,7 +2,7 @@ mod extensions;
 
 use std::{net::SocketAddr, sync::Arc};
 
-use libnero::{Extension, ExtensionHost};
+use libnero::{Extension, ExtensionHost, ExtensionMetadata};
 use librqbit::Session;
 use nero_processor::{Processor, torrent::RqbitTorrentBackend};
 use reqwest::Client;
@@ -19,7 +19,7 @@ use tauri::{AppHandle, Emitter, Result, State, async_runtime::RwLock};
 struct ExtensionInfo {
     file_path: String,
 
-    metadata: serde_json::Value,
+    metadata: Arc<ExtensionMetadata>,
     cache_dir: String,
     max_cache_size: Option<u64>,
 }

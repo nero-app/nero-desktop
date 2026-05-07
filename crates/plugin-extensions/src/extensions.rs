@@ -35,8 +35,7 @@ pub async fn load_extension<R: Runtime>(
 
     let info = ExtensionInfo {
         file_path,
-        metadata: serde_json::to_value(extension.metadata())
-            .map_err(|e| tauri::Error::Anyhow(e.into()))?,
+        metadata: extension.metadata(),
         cache_dir,
         max_cache_size,
     };
