@@ -6,7 +6,10 @@ use libnero::{
 };
 use tauri::{AppHandle, Result, Runtime, State};
 
-use crate::{ExtensionInfo, PluginState};
+use crate::{
+    PluginState,
+    preferences::{ExtensionPreferences, PluginPreferences},
+};
 
 #[tauri::command]
 #[tracing::instrument]
@@ -23,7 +26,7 @@ pub async fn load_extension<R: Runtime>(
     app: AppHandle<R>,
     file_path: String,
     options: ExtensionOptions,
-) -> Result<ExtensionInfo> {
+) -> Result<()> {
     let cache_dir = options.cache_dir.to_string_lossy().to_string();
     let max_cache_size = options.max_cache_size;
 
@@ -33,23 +36,17 @@ pub async fn load_extension<R: Runtime>(
         .await
         .map_err(|e| tauri::Error::Anyhow(e.into()))?;
 
-    let info = ExtensionInfo {
+    state.extension.write().await.replace(extension);
+
+    let mut data = PluginPreferences::get(&app);
+    data.extension = Some(ExtensionPreferences {
         file_path,
-        metadata: extension.metadata(),
         cache_dir,
         max_cache_size,
-    };
+    });
+    PluginPreferences::save(&app, &data)?;
 
-    {
-        state.extension.write().await.replace(extension);
-
-        let mut status = state.status.write().await;
-        status.extension = Some(info.clone());
-    }
-
-    state.emit_status(&app).await?;
-
-    Ok(info)
+    Ok(())
 }
 
 #[tauri::command]

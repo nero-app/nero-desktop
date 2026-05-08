@@ -1,59 +1,76 @@
 mod extensions;
+mod preferences;
 
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 
-use libnero::{Extension, ExtensionHost, ExtensionMetadata};
+use libnero::{Extension, ExtensionHost, types::ExtensionOptions};
 use librqbit::Session;
-use nero_processor::{Processor, torrent::RqbitTorrentBackend};
+use nero_processor::{
+    Processor,
+    torrent::{RqbitTorrentBackend, TorrentBackend},
+};
 use reqwest::Client;
 use tauri::{
     Manager, Runtime,
     plugin::{self, TauriPlugin},
 };
 
-use serde::Serialize;
-use tauri::{AppHandle, Emitter, Result, State, async_runtime::RwLock};
+use tauri::{AppHandle, Emitter, Result, async_runtime::RwLock};
 
-#[derive(Default, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct ExtensionInfo {
-    file_path: String,
-
-    metadata: Arc<ExtensionMetadata>,
-    cache_dir: String,
-    max_cache_size: Option<u64>,
-}
-
-#[derive(Default, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct PluginStatus {
-    extension: Option<ExtensionInfo>,
-}
+use crate::preferences::PluginPreferences;
 
 struct PluginState {
     host: ExtensionHost,
     extension: RwLock<Option<Extension>>,
-    status: RwLock<PluginStatus>,
 }
 
-impl PluginState {
-    fn new(host: ExtensionHost) -> Self {
-        Self {
-            host,
-            extension: Default::default(),
-            status: Default::default(),
-        }
-    }
+async fn setup<R: Runtime>(app: &AppHandle<R>, processor_addr: SocketAddr) -> Result<PluginState> {
+    let data = PluginPreferences::get(&app);
 
-    async fn emit_status<R: Runtime>(&self, app: &AppHandle<R>) -> Result<()> {
-        let status = self.status.read().await.clone();
-        app.emit("nero-extensions://status-changed", status)
-    }
-}
+    let http_client = Client::new();
 
-#[tauri::command]
-async fn get_status(state: State<'_, PluginState>) -> Result<PluginStatus> {
-    Ok(state.status.read().await.clone())
+    let torrent_backend = if let Some(torrent) = data.processor.as_ref()
+        && torrent.torrent_enabled
+    {
+        let output_dir = torrent
+            .torrent_output_folder
+            .as_deref()
+            .map(PathBuf::from)
+            .unwrap_or_else(|| app.path().app_cache_dir().unwrap());
+
+        let librqbit_session = Session::new(output_dir).await?;
+        let backend = RqbitTorrentBackend::new(librqbit_session, http_client.clone());
+        Some(Arc::new(backend) as Arc<dyn TorrentBackend + 'static>)
+    } else {
+        None
+    };
+
+    let processor = Processor::with_config(
+        processor_addr,
+        http_client,
+        nero_processor::Config {
+            torrent_backend,
+            ..Default::default()
+        },
+    );
+
+    let host = ExtensionHost::new(processor);
+
+    let initial_extension = if let Some(prefs) = data.extension.as_ref() {
+        let options = ExtensionOptions {
+            cache_dir: PathBuf::from(&prefs.cache_dir),
+            max_cache_size: prefs.max_cache_size,
+        };
+        let extension = host.load(&prefs.file_path, options).await?;
+        Some(extension)
+    } else {
+        None
+    };
+
+    Ok(PluginState {
+        host,
+        extension: RwLock::new(initial_extension),
+    })
 }
 
 pub struct Builder {
@@ -68,38 +85,14 @@ impl Builder {
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let processor_addr = self.processor_addr;
 
-        // TODO: load torrent backend config from preferences
         plugin::Builder::new("nero-extensions")
             .setup(move |app, _| {
-                let http_client = Client::new();
-                let app_handle = app.app_handle().clone();
-
+                let app_handle = app.clone();
                 tauri::async_runtime::spawn(async move {
-                    let cache_dir = app_handle.path().app_cache_dir().unwrap();
-                    let torrent_backend = Session::new(cache_dir).await.ok().map(|session| {
-                        Arc::new(RqbitTorrentBackend::new(session, http_client.clone()))
-                            as Arc<dyn nero_processor::torrent::TorrentBackend>
-                    });
-
-                    let processor = Processor::with_config(
-                        processor_addr,
-                        http_client,
-                        nero_processor::Config {
-                            torrent_backend,
-                            ..Default::default()
-                        },
-                    );
-
-                    let nero = ExtensionHost::new(processor);
-                    let state = PluginState::new(nero);
+                    let state = setup(&app_handle, processor_addr).await.unwrap();
 
                     let processor = state.host.processor().clone();
-                    tauri::async_runtime::spawn(async move {
-                        processor
-                            .run()
-                            .await
-                            .expect("Unable to spawn internal extension processor server")
-                    });
+                    tauri::async_runtime::spawn(async move { processor.run().await.unwrap() });
 
                     app_handle.manage(state);
                     app_handle.emit("nero-extensions://ready", ()).unwrap();
@@ -108,7 +101,7 @@ impl Builder {
                 Ok(())
             })
             .invoke_handler(tauri::generate_handler![
-                get_status,
+                preferences::get_preferences,
                 extensions::get_extension_metadata,
                 extensions::load_extension,
                 extensions::get_filters,

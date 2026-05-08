@@ -1,20 +1,33 @@
 import { t } from "../../lib/i18n";
-import { useExtensionStatus } from "../../providers/ExtensionProvider";
+import { useExtensionPreferences } from "../../providers/ExtensionPreferencesProvider";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
 import { Typography } from "../ui/Typography";
 import { ExtensionCard } from "./ExtensionCard";
 import { ExtensionInfoDialog } from "./ExtensionInfoDialog";
 import { ExtensionLoadDialog } from "./ExtensionLoadDialog";
+import { getExtensionMetadata, type Metadata } from "@nero/plugin-extensions";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BlocksIcon } from "lucide-solid";
-import { Match, Show, Switch, createSignal } from "solid-js";
+import { Match, Show, Switch, createResource, createSignal } from "solid-js";
 
 export default function ExtensionsList() {
-  const status = useExtensionStatus();
+  const extensionPreferences = useExtensionPreferences();
   const [selectedFile, setSelectedFile] = createSignal<string | null>(null);
   const [showAddDialog, setShowAddDialog] = createSignal(false);
   const [showInfoDialog, setShowInfoDialog] = createSignal(false);
+
+  const [metadata] = createResource(
+    () => extensionPreferences().extension?.filePath,
+    (filePath) => getExtensionMetadata(filePath) as Promise<Metadata>,
+  );
+
+  const extensionReady = () => {
+    const extension = extensionPreferences().extension;
+    const meta = metadata();
+    if (!extension || !meta) return undefined;
+    return { extension, metadata: meta };
+  };
 
   async function selectExtension() {
     const file = await open({
@@ -34,16 +47,14 @@ export default function ExtensionsList() {
   return (
     <SectionTable>
       <SectionTable.Header title={t("settings.extensions.loaded_label")}>
-        <Show when={status().extension}>
-          <Button variant="outline" size="sm" onClick={selectExtension}>
-            <Typography as="span">{t("settings.extensions.load")}</Typography>
-          </Button>
-        </Show>
+        <Button variant="outline" size="sm" onClick={selectExtension}>
+          <Typography as="span">{t("settings.extensions.load")}</Typography>
+        </Button>
       </SectionTable.Header>
 
       <SectionTable.Content>
         <Show
-          when={status().extension}
+          when={extensionReady()}
           fallback={
             <div class="flex flex-col items-center gap-2 text-center">
               <BlocksIcon class="size-10 text-neutral-300" />
@@ -56,9 +67,10 @@ export default function ExtensionsList() {
             </div>
           }
         >
-          {(ext) => (
+          {(ready) => (
             <ExtensionCard
-              extension={ext()}
+              preferences={ready().extension}
+              metadata={ready().metadata}
               onClick={() => setShowInfoDialog(true)}
             />
           )}
@@ -81,14 +93,17 @@ export default function ExtensionsList() {
             }}
           />
         </Match>
-        <Match when={showInfoDialog()}>
-          <ExtensionInfoDialog
-            extension={status().extension!}
-            open={showInfoDialog()}
-            onOpenChange={(open) => {
-              if (!open) setShowInfoDialog(false);
-            }}
-          />
+        <Match when={showInfoDialog() && extensionReady()}>
+          {(ready) => (
+            <ExtensionInfoDialog
+              preferences={ready().extension}
+              metadata={ready().metadata}
+              open={showInfoDialog()}
+              onOpenChange={(open) => {
+                if (!open) setShowInfoDialog(false);
+              }}
+            />
+          )}
         </Match>
       </Switch>
     </SectionTable>

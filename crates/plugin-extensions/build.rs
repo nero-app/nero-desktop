@@ -1,5 +1,5 @@
 const COMMANDS: &[&str] = &[
-    "get_status",
+    "get_preferences",
     "get_extension_metadata",
     "load_extension",
     "get_filters",

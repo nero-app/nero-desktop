@@ -3,38 +3,24 @@ import { Dialog } from "../ui/Dialog";
 import { Typography } from "../ui/Typography";
 import { ExtensionMetaPanel } from "./ExtensionMetaPanel";
 import {
-  getExtensionMetadata,
-  type ExtensionInfo,
+  type ExtensionPreferences,
   type Metadata,
 } from "@nero/plugin-extensions";
-import {
-  createResource,
-  type ComponentProps,
-  splitProps,
-  ErrorBoundary,
-  Show,
-} from "solid-js";
+import { type ComponentProps, splitProps, ErrorBoundary } from "solid-js";
 
 type ExtensionInfoDialogProps = ComponentProps<typeof Dialog> & {
-  extension: ExtensionInfo;
+  preferences: ExtensionPreferences;
+  metadata: Metadata;
 };
 
 export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
-  const [local, dialogProps] = splitProps(props, ["extension"]);
-
-  const [metadata] = createResource(
-    () => local.extension.filePath,
-    (file) => getExtensionMetadata(file) as Promise<Metadata>,
-  );
-
-  const options = () => local.extension.options;
+  const [local, dialogProps] = splitProps(props, ["preferences", "metadata"]);
 
   return (
     <Dialog {...dialogProps}>
       <Dialog.Header
         title={
-          local.extension.metadata.name ??
-          t("settings.extensions.meta.fallback_title")
+          local.metadata.name ?? t("settings.extensions.meta.fallback_title")
         }
       />
 
@@ -42,14 +28,10 @@ export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
         <ErrorBoundary
           fallback={(err) => <Typography>{err.message}</Typography>}
         >
-          <Show when={metadata()}>
-            {(metadata) => (
-              <ExtensionMetaPanel
-                filePath={local.extension.filePath}
-                metadata={metadata()}
-              />
-            )}
-          </Show>
+          <ExtensionMetaPanel
+            filePath={local.preferences.filePath}
+            metadata={local.metadata}
+          />
         </ErrorBoundary>
 
         <hr class="h-full border border-neutral-200" />
@@ -63,7 +45,7 @@ export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
             <Typography variant="subtitle">
               {t("settings.extensions.options.cache_dir")}
             </Typography>
-            <Typography as="code">{options().cacheDir}</Typography>
+            <Typography as="code">{local.preferences.cacheDir}</Typography>
           </div>
 
           <div class="flex flex-col gap-2">
@@ -71,8 +53,8 @@ export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
               {t("settings.extensions.options.max_cache_size")}
             </Typography>
             <Typography>
-              {options().maxCacheSize
-                ? `${options().maxCacheSize! / 1024 / 1024} MB`
+              {local.preferences.maxCacheSize
+                ? `${local.preferences.maxCacheSize! / 1024 / 1024} MB`
                 : "0 MB"}
             </Typography>
           </div>

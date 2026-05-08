@@ -1,22 +1,21 @@
 import { t } from "../../lib/i18n";
 import { Typography } from "../ui/Typography";
-import type { ExtensionInfo } from "@nero/plugin-extensions";
+import type { ExtensionPreferences, Metadata } from "@nero/plugin-extensions";
 import { BlocksIcon } from "lucide-solid";
 import { Show } from "solid-js";
 
 type ExtensionCardProps = {
-  extension: ExtensionInfo;
+  preferences: ExtensionPreferences;
+  metadata: Metadata;
   onClick: () => void;
 };
 
 export function ExtensionCard(props: ExtensionCardProps) {
   const subtitle = () => {
     const parts = [
-      props.extension.metadata.version
-        ? `v${props.extension.metadata.version}`
-        : null,
-      props.extension.metadata.authors ?? null,
-      props.extension.metadata.licenses ?? null,
+      props.metadata.version ? `v${props.metadata.version}` : null,
+      props.metadata.authors ?? null,
+      props.metadata.licenses ?? null,
     ].filter(Boolean);
     return parts.length > 0 ? parts.join(` ${t("common.separator")} `) : null;
   };
@@ -31,7 +30,7 @@ export function ExtensionCard(props: ExtensionCardProps) {
       <BlocksIcon class="shrink-0 text-neutral-400" />
       <span class="block min-w-0 flex-1">
         <Typography as="span" class="block truncate">
-          {props.extension.metadata.name ?? props.extension.filePath}
+          {props.metadata.name ?? props.preferences.filePath}
         </Typography>
         <Show when={subtitle()}>
           <Typography variant="caption" class="block truncate">

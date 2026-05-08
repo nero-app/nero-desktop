@@ -1,6 +1,5 @@
 import type {
   ExtensionOptions,
-  ExtensionInfo,
   Metadata,
   FilterCategory,
   SeriesPage,
@@ -23,7 +22,7 @@ export async function getExtensionMetadata(
 export async function loadExtension(
   filePath: string,
   options: ExtensionOptions,
-): Promise<ExtensionInfo> {
+): Promise<void> {
   if (
     options.maxCacheSize !== undefined &&
     options.maxCacheSize > MAX_CACHE_SIZE_BYTES

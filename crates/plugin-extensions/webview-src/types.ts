@@ -17,16 +17,6 @@ export interface ExtensionOptions {
   maxCacheSize?: number;
 }
 
-export interface ExtensionInfo {
-  filePath: string;
-  metadata: Metadata;
-  options: ExtensionOptions;
-}
-
-export interface PluginStatus {
-  extension: ExtensionInfo | null;
-}
-
 export interface Series {
   id: string;
   title: string;
