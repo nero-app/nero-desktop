@@ -25,7 +25,7 @@ pub struct PreferencesData {
 }
 
 impl PreferencesData {
-    const STORE_FILE: &'static str = "nero.json";
+    const STORE_FILE: &'static str = "nero-extensions.json";
     const PREFERENCES_KEY: &'static str = "preferences";
 
     pub fn new<R: Runtime>(app: &AppHandle<R>) -> Self {
