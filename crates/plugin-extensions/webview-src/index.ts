@@ -5,7 +5,7 @@ export * from "./extensions";
 
 export interface ProcessorPreferences {
   torrentEnabled: boolean;
-  torrentOutputFolder?: string;
+  torrentOutputFolder: string;
 }
 
 export interface ExtensionPreferences {

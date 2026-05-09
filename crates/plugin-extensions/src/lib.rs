@@ -15,7 +15,7 @@ use tauri::{
     plugin::{self, TauriPlugin},
 };
 
-use tauri::{AppHandle, Emitter, Result, async_runtime::RwLock};
+use tauri::{Emitter, Result, async_runtime::RwLock};
 
 use crate::preferences::PreferencesData;
 
@@ -24,22 +24,13 @@ struct PluginState {
     extension: RwLock<Option<Extension>>,
 }
 
-async fn setup<R: Runtime>(
-    app: &AppHandle<R>,
-    data: &PreferencesData,
-    processor_addr: SocketAddr,
-) -> Result<PluginState> {
+async fn setup(data: &PreferencesData, processor_addr: SocketAddr) -> Result<PluginState> {
     let http_client = Client::new();
 
     let torrent_backend = if let Some(torrent) = data.processor.as_ref()
         && torrent.torrent_enabled
     {
-        let output_dir = torrent
-            .torrent_output_folder
-            .as_deref()
-            .map(PathBuf::from)
-            .unwrap_or_else(|| app.path().app_cache_dir().unwrap());
-
+        let output_dir = PathBuf::from(&torrent.torrent_output_folder);
         let librqbit_session = Session::new(output_dir).await?;
         let backend = RqbitTorrentBackend::new(librqbit_session, http_client.clone());
         Some(Arc::new(backend) as Arc<dyn TorrentBackend + 'static>)
@@ -81,9 +72,7 @@ pub fn init<R: Runtime>(processor_addr: SocketAddr) -> TauriPlugin<R> {
             let preferences = PreferencesData::new(app);
             let app_handle = app.clone();
             tauri::async_runtime::spawn(async move {
-                let state = setup(&app_handle, &preferences, processor_addr)
-                    .await
-                    .unwrap();
+                let state = setup(&preferences, processor_addr).await.unwrap();
 
                 let processor = state.host.processor().clone();
                 tauri::async_runtime::spawn(async move { processor.run().await.unwrap() });

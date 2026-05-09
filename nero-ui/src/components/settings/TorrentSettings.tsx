@@ -11,14 +11,13 @@ import { Show, createResource } from "solid-js";
 
 export default function TorrentSettings() {
   const preferences = useExtensionPreferences();
-  const [defaultFolder] = createResource(appCacheDir);
+  const [defaultFolder] = createResource(appCacheDir, { initialValue: "" });
 
   async function handleToggle(value: boolean) {
     await setProcessorPreferences({
       torrentEnabled: value,
       torrentOutputFolder:
-        preferences().processor?.torrentOutputFolder ??
-        (value ? defaultFolder() : undefined),
+        preferences().processor?.torrentOutputFolder ?? defaultFolder(),
     });
   }
 

@@ -6,7 +6,7 @@ use tauri_plugin_store::StoreExt;
 #[serde(rename_all = "camelCase")]
 pub struct ProcessorPreferences {
     pub torrent_enabled: bool,
-    pub torrent_output_folder: Option<String>,
+    pub torrent_output_folder: String,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
