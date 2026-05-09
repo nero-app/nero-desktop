@@ -9,7 +9,7 @@ import { useExtensionPreferences } from "../providers/ExtensionPreferencesProvid
 import { Tabs } from "@kobalte/core/tabs";
 import type { Episode } from "@nero/plugin-extensions";
 import { A, useParams } from "@solidjs/router";
-import { PlayIcon, Share2Icon, ThumbsUpIcon } from "lucide-solid";
+import { ImageOffIcon, PlayIcon, Share2Icon, ThumbsUpIcon } from "lucide-solid";
 import { Switch, Match, createSignal, Show, For } from "solid-js";
 
 export default function SeriesPage() {
@@ -50,7 +50,11 @@ export default function SeriesPage() {
             <Typography>{t("common.loading")}</Typography>
           </Match>
           <Match when={seriesQuery.error}>
-            <div class="size-full bg-gray-200" />
+            <div
+              class="flex size-full items-center justify-center bg-neutral-200"
+            >
+              <ImageOffIcon class="text-neutral-300" size={72} />
+            </div>
           </Match>
           <Match when={seriesQuery()}>
             <img

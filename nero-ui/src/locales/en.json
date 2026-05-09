@@ -22,6 +22,7 @@
   },
   "media": {
     "episodes": "Episodes",
+    "episode": "Episode {{number}}",
     "start_watching": "Start watching",
     "season": "Season",
     "details": "Details",

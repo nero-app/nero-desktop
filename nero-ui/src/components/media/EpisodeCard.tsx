@@ -1,5 +1,8 @@
+import { t } from "../../lib/i18n";
 import { Typography } from "../ui/Typography";
 import type { Episode } from "@nero/plugin-extensions";
+import { ImageOffIcon } from "lucide-solid";
+import { Show } from "solid-js";
 
 type EpisodeCardProps = {
   seriesId: string;
@@ -15,12 +18,24 @@ export default function EpisodeCard(props: EpisodeCardProps) {
       onClick={() => props.onClick?.(props.episode)}
     >
       <div class="relative aspect-video w-full overflow-hidden rounded-lg">
-        <img
-          class="size-full object-cover transition-transform duration-300
-            group-hover:scale-105"
-          src={props.episode.thumbnailUrl}
-          alt={`Episode ${props.episode.number}: ${props.episode.title}`}
-        />
+        <Show
+          when={props.episode.thumbnailUrl}
+          fallback={
+            <div
+              class="flex size-full items-center justify-center bg-neutral-200
+                transition-transform duration-300 group-hover:scale-105"
+            >
+              <ImageOffIcon class="text-neutral-300" size={28} />
+            </div>
+          }
+        >
+          <img
+            class="size-full object-cover transition-transform duration-300
+              group-hover:scale-105"
+            src={props.episode.thumbnailUrl}
+            alt={`Episode ${props.episode.number}: ${props.episode.title}`}
+          />
+        </Show>
 
         <div
           class="absolute inset-0 flex items-center justify-center bg-black/20
@@ -37,7 +52,8 @@ export default function EpisodeCard(props: EpisodeCardProps) {
         as="span"
         class="w-full truncate text-center"
       >
-        {props.episode.title}
+        {props.episode.title ||
+          t("media.episode", { number: props.episode.number })}
       </Typography>
     </button>
   );

@@ -1,18 +1,26 @@
 import { Typography } from "../ui/Typography";
 import type { Series } from "@nero/plugin-extensions";
 import { A } from "@solidjs/router";
+import { ImageOffIcon } from "lucide-solid";
 import { Show } from "solid-js";
 
 export default function SeriesCard(props: { series: Series }) {
   return (
     <A
-      class="flex flex-col gap-1 rounded-md p-1 duration-300 hover:bg-gray-200
-        active:scale-95"
+      class="flex flex-col gap-1 rounded-md p-1 duration-300
+        hover:bg-neutral-300 active:scale-95"
       href={`/series/${props.series.id}`}
     >
       <Show
         when={props.series.posterUrl}
-        fallback={<div class="aspect-2/3 rounded-lg bg-gray-200" />}
+        fallback={
+          <div
+            class="flex aspect-2/3 items-center justify-center rounded-lg
+              bg-neutral-200"
+          >
+            <ImageOffIcon class="text-neutral-300" size={28} />
+          </div>
+        }
       >
         <img
           class="aspect-2/3 rounded-lg object-cover"

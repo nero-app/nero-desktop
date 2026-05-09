@@ -5,7 +5,8 @@ import { Button } from "../ui/Button";
 import { Dialog } from "../ui/Dialog";
 import { Typography } from "../ui/Typography";
 import type { Episode, Video } from "@nero/plugin-extensions";
-import { For, Match, Switch, type ComponentProps } from "solid-js";
+import { ImageOff } from "lucide-solid";
+import { For, Match, Show, Switch, type ComponentProps } from "solid-js";
 
 function VideoCard(props: { video: Video; onClick?: (video: Video) => void }) {
   return (
@@ -44,11 +45,23 @@ export default function VideoSelector(props: VideoSelectorProps) {
       />
       <Dialog.Content class="grid grid-cols-2 py-2">
         <div class="flex flex-col gap-2 overflow-y-auto px-4">
-          <img
-            src={props.episode.thumbnailUrl}
-            class="aspect-video w-full rounded object-cover"
-            alt={`Episode ${props.episode.number}: ${props.episode.title}`}
-          />
+          <Show
+            when={props.episode.thumbnailUrl}
+            fallback={
+              <div
+                class="flex aspect-video w-full items-center justify-center
+                  rounded bg-neutral-200"
+              >
+                <ImageOff class="text-neutral-300" size={48} />
+              </div>
+            }
+          >
+            <img
+              src={props.episode.thumbnailUrl}
+              class="aspect-video w-full rounded object-cover"
+              alt={`Episode ${props.episode.number}: ${props.episode.title}`}
+            />
+          </Show>
           <Typography>{props.episode.description}</Typography>
         </div>
 
