@@ -48,7 +48,7 @@ fn main() {
         .manage(AppState::new())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::default().build())
-        .plugin(tauri_plugin_nero_extensions::Builder::new(processor_addr).build())
+        .plugin(tauri_plugin_nero_extensions::init(processor_addr))
         .invoke_handler(tauri::generate_handler![
             get_status,
             player::set_player_path,

@@ -75,48 +75,36 @@ async fn setup<R: Runtime>(
     })
 }
 
-pub struct Builder {
-    processor_addr: SocketAddr,
-}
+pub fn init<R: Runtime>(processor_addr: SocketAddr) -> TauriPlugin<R> {
+    plugin::Builder::new("nero-extensions")
+        .setup(move |app, _| {
+            let preferences = PreferencesData::new(app);
+            let app_handle = app.clone();
+            tauri::async_runtime::spawn(async move {
+                let state = setup(&app_handle, &preferences, processor_addr)
+                    .await
+                    .unwrap();
 
-impl Builder {
-    pub fn new(processor_addr: SocketAddr) -> Self {
-        Self { processor_addr }
-    }
+                let processor = state.host.processor().clone();
+                tauri::async_runtime::spawn(async move { processor.run().await.unwrap() });
 
-    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
-        let processor_addr = self.processor_addr;
+                app_handle.manage(RwLock::new(preferences));
+                app_handle.manage(state);
+                app_handle.emit("nero-extensions://ready", ()).unwrap();
+            });
 
-        plugin::Builder::new("nero-extensions")
-            .setup(move |app, _| {
-                let preferences = PreferencesData::new(app);
-                let app_handle = app.clone();
-                tauri::async_runtime::spawn(async move {
-                    let state = setup(&app_handle, &preferences, processor_addr)
-                        .await
-                        .unwrap();
-
-                    let processor = state.host.processor().clone();
-                    tauri::async_runtime::spawn(async move { processor.run().await.unwrap() });
-
-                    app_handle.manage(RwLock::new(preferences));
-                    app_handle.manage(state);
-                    app_handle.emit("nero-extensions://ready", ()).unwrap();
-                });
-
-                Ok(())
-            })
-            .invoke_handler(tauri::generate_handler![
-                preferences::get_preferences,
-                preferences::set_processor_preferences,
-                extensions::get_extension_metadata,
-                extensions::load_extension,
-                extensions::get_filters,
-                extensions::search,
-                extensions::get_series_info,
-                extensions::get_series_episodes,
-                extensions::get_series_videos,
-            ])
-            .build()
-    }
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            preferences::get_preferences,
+            preferences::set_processor_preferences,
+            extensions::get_extension_metadata,
+            extensions::load_extension,
+            extensions::get_filters,
+            extensions::search,
+            extensions::get_series_info,
+            extensions::get_series_episodes,
+            extensions::get_series_videos,
+        ])
+        .build()
 }
