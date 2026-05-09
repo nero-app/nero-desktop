@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter, Result, Runtime};
+use tauri::{AppHandle, Emitter, Result, Runtime, State, async_runtime::RwLock};
 use tauri_plugin_store::StoreExt;
 
 #[derive(Serialize, Deserialize, Default, Clone)]
@@ -24,13 +24,11 @@ pub struct PreferencesData {
     pub processor: Option<ProcessorPreferences>,
 }
 
-pub struct PluginPreferences;
-
-impl PluginPreferences {
+impl PreferencesData {
     const STORE_FILE: &'static str = "nero.json";
     const PREFERENCES_KEY: &'static str = "preferences";
 
-    pub fn get<R: Runtime>(app: &AppHandle<R>) -> PreferencesData {
+    pub fn new<R: Runtime>(app: &AppHandle<R>) -> Self {
         app.store(Self::STORE_FILE)
             .ok()
             .and_then(|store| store.get(Self::PREFERENCES_KEY))
@@ -38,27 +36,29 @@ impl PluginPreferences {
             .unwrap_or_default()
     }
 
-    pub fn save<R: Runtime>(app: &AppHandle<R>, data: &PreferencesData) -> tauri::Result<()> {
+    pub fn save<R: Runtime>(&self, app: &AppHandle<R>) -> tauri::Result<()> {
         let store = app.store(Self::STORE_FILE).unwrap();
-        store.set(Self::PREFERENCES_KEY, serde_json::to_value(data).unwrap());
+        store.set(Self::PREFERENCES_KEY, serde_json::to_value(self).unwrap());
         store.save().unwrap();
-        app.emit("nero-extensions://preferences-changed", data)?;
+        app.emit("nero-extensions://preferences-changed", self)?;
         Ok(())
     }
 }
 
 #[tauri::command]
-pub fn get_preferences<R: Runtime>(app: AppHandle<R>) -> PreferencesData {
-    PluginPreferences::get(&app)
+pub async fn get_preferences(
+    preferences: State<'_, RwLock<PreferencesData>>,
+) -> Result<PreferencesData> {
+    Ok(preferences.read().await.clone())
 }
 
 #[tauri::command]
 pub async fn set_processor_preferences<R: Runtime>(
+    preferences: tauri::State<'_, RwLock<PreferencesData>>,
     app: AppHandle<R>,
     processor: ProcessorPreferences,
 ) -> Result<()> {
-    let mut data = PluginPreferences::get(&app);
+    let mut data = preferences.write().await;
     data.processor = Some(processor);
-    PluginPreferences::save(&app, &data)?;
-    Ok(())
+    data.save(&app)
 }

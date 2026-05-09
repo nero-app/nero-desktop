@@ -4,11 +4,11 @@ use libnero::{
         EpisodesPage, ExtensionOptions, FilterCategory, SearchFilter, Series, SeriesPage, Video,
     },
 };
-use tauri::{AppHandle, Result, Runtime, State};
+use tauri::{AppHandle, Result, Runtime, State, async_runtime::RwLock};
 
 use crate::{
     PluginState,
-    preferences::{ExtensionPreferences, PluginPreferences},
+    preferences::{ExtensionPreferences, PreferencesData},
 };
 
 #[tauri::command]
@@ -20,9 +20,10 @@ pub async fn get_extension_metadata(file_path: String) -> Result<ExtensionMetada
 }
 
 #[tauri::command]
-#[tracing::instrument(skip(state, app))]
+#[tracing::instrument(skip(state, preferences, app))]
 pub async fn load_extension<R: Runtime>(
     state: State<'_, PluginState>,
+    preferences: State<'_, RwLock<PreferencesData>>,
     app: AppHandle<R>,
     file_path: String,
     options: ExtensionOptions,
@@ -30,21 +31,17 @@ pub async fn load_extension<R: Runtime>(
     let cache_dir = options.cache_dir.to_string_lossy().to_string();
     let max_cache_size = options.max_cache_size;
 
-    let extension = state
-        .host
-        .load(file_path.clone(), options)
-        .await
-        .map_err(|e| tauri::Error::Anyhow(e.into()))?;
+    let extension = state.host.load(file_path.clone(), options).await?;
 
     state.extension.write().await.replace(extension);
 
-    let mut data = PluginPreferences::get(&app);
+    let mut data = preferences.write().await;
     data.extension = Some(ExtensionPreferences {
         file_path,
         cache_dir,
         max_cache_size,
     });
-    PluginPreferences::save(&app, &data)?;
+    data.save(&app)?;
 
     Ok(())
 }

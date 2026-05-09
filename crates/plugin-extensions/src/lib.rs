@@ -17,16 +17,18 @@ use tauri::{
 
 use tauri::{AppHandle, Emitter, Result, async_runtime::RwLock};
 
-use crate::preferences::PluginPreferences;
+use crate::preferences::PreferencesData;
 
 struct PluginState {
     host: ExtensionHost,
     extension: RwLock<Option<Extension>>,
 }
 
-async fn setup<R: Runtime>(app: &AppHandle<R>, processor_addr: SocketAddr) -> Result<PluginState> {
-    let data = PluginPreferences::get(&app);
-
+async fn setup<R: Runtime>(
+    app: &AppHandle<R>,
+    data: &PreferencesData,
+    processor_addr: SocketAddr,
+) -> Result<PluginState> {
     let http_client = Client::new();
 
     let torrent_backend = if let Some(torrent) = data.processor.as_ref()
@@ -87,13 +89,17 @@ impl Builder {
 
         plugin::Builder::new("nero-extensions")
             .setup(move |app, _| {
+                let preferences = PreferencesData::new(app);
                 let app_handle = app.clone();
                 tauri::async_runtime::spawn(async move {
-                    let state = setup(&app_handle, processor_addr).await.unwrap();
+                    let state = setup(&app_handle, &preferences, processor_addr)
+                        .await
+                        .unwrap();
 
                     let processor = state.host.processor().clone();
                     tauri::async_runtime::spawn(async move { processor.run().await.unwrap() });
 
+                    app_handle.manage(RwLock::new(preferences));
                     app_handle.manage(state);
                     app_handle.emit("nero-extensions://ready", ()).unwrap();
                 });
