@@ -102,6 +102,7 @@ impl Builder {
             })
             .invoke_handler(tauri::generate_handler![
                 preferences::get_preferences,
+                preferences::set_processor_preferences,
                 extensions::get_extension_metadata,
                 extensions::load_extension,
                 extensions::get_filters,

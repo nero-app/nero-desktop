@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter, Runtime};
+use tauri::{AppHandle, Emitter, Result, Runtime};
 use tauri_plugin_store::StoreExt;
 
 #[derive(Serialize, Deserialize, Default, Clone)]
@@ -50,4 +50,15 @@ impl PluginPreferences {
 #[tauri::command]
 pub fn get_preferences<R: Runtime>(app: AppHandle<R>) -> PreferencesData {
     PluginPreferences::get(&app)
+}
+
+#[tauri::command]
+pub async fn set_processor_preferences<R: Runtime>(
+    app: AppHandle<R>,
+    processor: ProcessorPreferences,
+) -> Result<()> {
+    let mut data = PluginPreferences::get(&app);
+    data.processor = Some(processor);
+    PluginPreferences::save(&app, &data)?;
+    Ok(())
 }

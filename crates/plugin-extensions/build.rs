@@ -1,5 +1,6 @@
 const COMMANDS: &[&str] = &[
     "get_preferences",
+    "set_processor_preferences",
     "get_extension_metadata",
     "load_extension",
     "get_filters",

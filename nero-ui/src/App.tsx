@@ -3,6 +3,7 @@ import SettingsLayout from "./layouts/SettingsLayout";
 import AppSettingsPage from "./pages/AppSettingsPage";
 import ExtensionsSettingsPage from "./pages/ExtensionsSettingsPage";
 import HomePage from "./pages/HomePage";
+import ProcessorSettingsPage from "./pages/ProcessorSettingsPage";
 import SearchPage from "./pages/SearchPage";
 import SeriesPage from "./pages/SeriesPage";
 import { AppProvider } from "./providers/AppProvider";
@@ -26,6 +27,7 @@ export default function App() {
 
             <Route path="/app" component={AppSettingsPage} />
             <Route path="/extensions" component={ExtensionsSettingsPage} />
+            <Route path="/processor" component={ProcessorSettingsPage} />
           </Route>
         </Router>
       </ExtensionPreferencesProvider>

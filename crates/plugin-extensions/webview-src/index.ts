@@ -22,3 +22,11 @@ export interface PreferencesData {
 export async function getPreferences(): Promise<PreferencesData> {
   return invoke("plugin:nero-extensions|get_preferences");
 }
+
+export async function setProcessorPreferences(
+  processor: ProcessorPreferences,
+): Promise<void> {
+  return invoke("plugin:nero-extensions|set_processor_preferences", {
+    processor,
+  });
+}

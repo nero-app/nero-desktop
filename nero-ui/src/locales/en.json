@@ -17,7 +17,8 @@
     "home": "Home",
     "extensions": "Extensions",
     "settings": "Settings",
-    "app": "App"
+    "app": "App",
+    "processor": "Processor"
   },
   "media": {
     "episodes": "Episodes",
@@ -46,14 +47,6 @@
         "placeholder": "Select Video Player",
         "browse_hint": "Click to browse for your preferred player",
         "popular_options": "Popular options:"
-      },
-      "torrent": {
-        "title": "Torrent Support",
-        "description": "Enable built-in torrent functionality",
-        "enable_label": "Enable Torrent Support",
-        "enable_description": "Allow the application to stream and download torrents directly",
-        "output_folder_title": "Choose Output Folder",
-        "output_folder_label": "Output Folder"
       }
     },
     "extensions": {
@@ -82,6 +75,18 @@
         "max_cache_size": "Max Cache Size",
         "max_cache_size_hint": "Enter the cache size in MB. Limits are enforced to prevent excessive storage usage.",
         "max_cache_size_exceeded": "Cannot exceed the maximum allowed size"
+      }
+    },
+    "processor": {
+      "title": "Processor",
+      "subtitle": "Configure how the application processes and serves content",
+      "torrent": {
+        "title": "Torrent Support",
+        "description": "Enable built-in torrent functionality",
+        "enable_label": "Enable Torrent Support",
+        "enable_description": "Allow the application to stream and download torrents directly",
+        "output_folder_title": "Choose Output Folder",
+        "output_folder_label": "Output Folder"
       }
     }
   },

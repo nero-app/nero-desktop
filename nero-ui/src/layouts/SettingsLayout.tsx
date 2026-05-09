@@ -7,6 +7,7 @@ import { For, type ParentProps } from "solid-js";
 const links = [
   { href: "/settings/app", label: () => t("nav.app") },
   { href: "/settings/extensions", label: () => t("nav.extensions") },
+  { href: "/settings/processor", label: () => t("nav.processor") },
 ];
 
 export default function SettingsLayout(props: ParentProps) {
