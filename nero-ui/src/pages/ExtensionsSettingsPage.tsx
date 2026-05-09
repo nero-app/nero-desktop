@@ -4,7 +4,7 @@ import { t } from "../lib/i18n";
 
 export default function ExtensionsPage() {
   return (
-    <div class="flex flex-col gap-4 px-8 py-4">
+    <div class="flex flex-col gap-4 p-8">
       <header>
         <Typography variant="h1">{t("settings.extensions.title")}</Typography>
         <Typography variant="subtitle">

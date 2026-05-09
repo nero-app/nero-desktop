@@ -29,4 +29,8 @@ minWidth = 768
 minHeight = 480
 maxWidth = 1280
 maxHeight = 800
-decorations = false
+titleBarStyle = "Overlay"
+
+[app.windows.trafficLightPosition]
+x = 16.0
+y = 16.0
