@@ -12,18 +12,18 @@ import {
   type Resource,
 } from "solid-js";
 
-export interface AppStatus {
+export interface AppPreferences {
   playerPath: string | null;
 }
 
-const AppContext = createContext<Resource<AppStatus>>();
+const AppContext = createContext<Resource<AppPreferences>>();
 
-export function AppProvider(props: ParentProps) {
+export function AppPreferencesProvider(props: ParentProps) {
   const [status, { mutate }] = createResource(() =>
-    invoke<AppStatus>("get_status"),
+    invoke<AppPreferences>("get_preferences"),
   );
 
-  listen<AppStatus>("app://status-changed", (event) => {
+  listen<AppPreferences>("app://preferences-changed", (event) => {
     mutate(event.payload);
   });
 
@@ -42,8 +42,11 @@ export function AppProvider(props: ParentProps) {
   );
 }
 
-export function useAppStatus() {
+export function useAppPreferences() {
   const ctx = useContext(AppContext);
-  if (!ctx) throw new Error("useAppStatus must be used within AppProvider");
-  return () => ctx() as AppStatus;
+  if (!ctx)
+    throw new Error(
+      "useAppPreferences must be used within AppPreferencesProvider",
+    );
+  return () => ctx() as AppPreferences;
 }

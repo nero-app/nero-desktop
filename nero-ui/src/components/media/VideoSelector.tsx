@@ -1,6 +1,6 @@
 import { t } from "../../lib/i18n";
 import { createVideoSelector } from "../../primitives/createVideoSelector";
-import { useAppStatus } from "../../providers/AppProvider";
+import { useAppPreferences } from "../../providers/AppPreferencesProvider";
 import { Button } from "../ui/Button";
 import { Dialog } from "../ui/Dialog";
 import { Typography } from "../ui/Typography";
@@ -32,7 +32,7 @@ type VideoSelectorProps = ComponentProps<typeof Dialog> & {
 };
 
 export default function VideoSelector(props: VideoSelectorProps) {
-  const status = useAppStatus();
+  const preferences = useAppPreferences();
   const { videosResource, selectVideo } = createVideoSelector(
     () => props.seriesId,
     () => props.episode,
@@ -66,7 +66,7 @@ export default function VideoSelector(props: VideoSelectorProps) {
         </div>
 
         <Switch>
-          <Match when={!status().playerPath}>
+          <Match when={!preferences().playerPath}>
             <div class="flex items-center justify-center px-4">
               <Typography>{t("media.player_not_configured")}</Typography>
             </div>

@@ -1,5 +1,5 @@
 import { t } from "../../lib/i18n";
-import { useAppStatus } from "../../providers/AppProvider";
+import { useAppPreferences } from "../../providers/AppPreferencesProvider";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
 import { Typography } from "../ui/Typography";
@@ -25,15 +25,16 @@ function PlayerLink(props: { label: string; href: string }) {
 }
 
 export default function PlayerSettings() {
-  const status = useAppStatus();
+  const preferences = useAppPreferences();
 
   async function selectPlayer() {
     const file = await open({
       title: t("settings.app.player.select_title"),
     });
     if (file) {
-      // TODO: Handle errors
-      invoke("set_player_path", { path: file });
+      await invoke("set_preferences", {
+        data: { playerPath: file },
+      });
     }
   }
 
@@ -49,7 +50,7 @@ export default function PlayerSettings() {
             {t("settings.app.player.placeholder")}
           </Typography>
           <Show
-            when={status().playerPath}
+            when={preferences().playerPath}
             fallback={
               <Typography variant="subtitle" class="truncate">
                 {t("settings.app.player.browse_hint")}
@@ -57,7 +58,7 @@ export default function PlayerSettings() {
             }
           >
             <Typography variant="subtitle" class="truncate">
-              {status().playerPath}
+              {preferences().playerPath}
             </Typography>
           </Show>
         </div>

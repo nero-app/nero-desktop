@@ -1,33 +1,21 @@
 use std::process::Command;
-use tauri::{AppHandle, Result, State};
+use tauri::{async_runtime::RwLock, Result, State};
 
-use crate::AppState;
-
-#[tauri::command]
-pub fn set_player_path(path: String, state: State<AppState>, app: AppHandle) -> Result<()> {
-    {
-        let mut status = state
-            .status
-            .lock()
-            .map_err(|_| anyhow::anyhow!("Mutex poisoned"))?;
-        status.player_path = Some(path);
-    }
-    state.emit_status(&app)
-}
+use crate::{preferences::PreferencesData, AppState};
 
 #[tauri::command]
-#[tracing::instrument(skip(state))]
-pub fn open_video_player(state: State<AppState>, url: String) -> Result<()> {
-    let player_path = {
-        let status = state
-            .status
-            .lock()
-            .map_err(|_| anyhow::anyhow!("Mutex poisoned"))?;
-        status
-            .player_path
-            .clone()
-            .ok_or_else(|| tauri::Error::Anyhow(anyhow::anyhow!("No player configured")))?
-    };
+#[tracing::instrument(skip(state, preferences))]
+pub async fn open_video_player(
+    state: State<'_, AppState>,
+    preferences: State<'_, RwLock<PreferencesData>>,
+    url: String,
+) -> Result<()> {
+    let player_path = preferences
+        .read()
+        .await
+        .player_path
+        .clone()
+        .ok_or_else(|| tauri::Error::Anyhow(anyhow::anyhow!("No player configured")))?;
 
     let mut guard = state
         .player_process

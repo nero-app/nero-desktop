@@ -6,13 +6,13 @@ import HomePage from "./pages/HomePage";
 import ProcessorSettingsPage from "./pages/ProcessorSettingsPage";
 import SearchPage from "./pages/SearchPage";
 import SeriesPage from "./pages/SeriesPage";
-import { AppProvider } from "./providers/AppProvider";
+import { AppPreferencesProvider } from "./providers/AppPreferencesProvider";
 import { ExtensionPreferencesProvider } from "./providers/ExtensionPreferencesProvider";
 import { Navigate, Route, Router } from "@solidjs/router";
 
 export default function App() {
   return (
-    <AppProvider>
+    <AppPreferencesProvider>
       <ExtensionPreferencesProvider>
         <Router root={Layout}>
           <Route path="/" component={HomePage} />
@@ -31,6 +31,6 @@ export default function App() {
           </Route>
         </Router>
       </ExtensionPreferencesProvider>
-    </AppProvider>
+    </AppPreferencesProvider>
   );
 }

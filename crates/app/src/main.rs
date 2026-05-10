@@ -1,40 +1,16 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod player;
+mod preferences;
 
 use std::{net::SocketAddr, process::Child, sync::Mutex};
 
-use serde::Serialize;
-use tauri::{AppHandle, Emitter, Result, State};
+use tauri::{async_runtime::RwLock, Manager};
 
-#[derive(Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-struct AppStatus {
-    player_path: Option<String>,
-}
+use crate::preferences::PreferencesData;
 
 struct AppState {
-    status: Mutex<AppStatus>,
     player_process: Mutex<Option<Child>>,
-}
-
-impl AppState {
-    fn new() -> Self {
-        Self {
-            status: Mutex::new(AppStatus { player_path: None }),
-            player_process: Mutex::new(None),
-        }
-    }
-
-    fn emit_status(&self, app: &AppHandle) -> Result<()> {
-        let status = self.status.lock().unwrap().clone();
-        app.emit("app://status-changed", status)
-    }
-}
-
-#[tauri::command]
-fn get_status(state: State<AppState>) -> AppStatus {
-    state.status.lock().unwrap().clone()
 }
 
 fn main() {
@@ -45,13 +21,19 @@ fn main() {
     let processor_addr = SocketAddr::from(([127, 0, 0, 1], processor_port));
 
     tauri::Builder::default()
-        .manage(AppState::new())
+        .manage(AppState {
+            player_process: Mutex::new(None),
+        })
+        .setup(|app| {
+            app.manage(RwLock::new(PreferencesData::new(app.handle())));
+            Ok(())
+        })
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_nero_extensions::init(processor_addr))
         .invoke_handler(tauri::generate_handler![
-            get_status,
-            player::set_player_path,
+            preferences::get_preferences,
+            preferences::set_preferences,
             player::open_video_player,
         ])
         .run(tauri::generate_context!())
