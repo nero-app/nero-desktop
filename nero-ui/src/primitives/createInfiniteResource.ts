@@ -12,7 +12,7 @@ export function createInfiniteResource<T>(
   fetcher: (page: number) => Promise<{ items: T[]; hasMore: boolean }>,
 ) {
   const [items, setItems] = createSignal<T[]>([]);
-  const [page, setPage] = createSignal(1);
+  const [page, setPage] = createSignal(0);
   const [hasMore, setHasMore] = createSignal(true);
   const [error, setError] = createSignal<any>(null);
   const [state, setState] =
@@ -52,9 +52,9 @@ export function createInfiniteResource<T>(
   };
 
   const reset = () => {
-    setPage(1);
+    setPage(0);
     setHasMore(true);
-    loadPage(1);
+    loadNext();
   };
 
   return [resource as InfiniteResource<T>, { loadNext, reset }] as const;
