@@ -16,9 +16,9 @@ struct AppState {
 fn main() {
     tracing_subscriber::fmt().init();
 
-    let processor_port = portpicker::pick_unused_port()
-        .expect("failed to pick an unused port for the extensions processor");
-    let processor_addr = SocketAddr::from(([127, 0, 0, 1], processor_port));
+    let proxy_port = portpicker::pick_unused_port()
+        .expect("failed to pick an unused port for the extensions media proxy");
+    let proxy_addr = SocketAddr::from(([127, 0, 0, 1], proxy_port));
 
     tauri::Builder::default()
         .manage(AppState {
@@ -30,7 +30,7 @@ fn main() {
         })
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::default().build())
-        .plugin(tauri_plugin_nero_extensions::init(processor_addr))
+        .plugin(tauri_plugin_nero_extensions::init(proxy_addr))
         .invoke_handler(tauri::generate_handler![
             preferences::get_preferences,
             preferences::set_preferences,

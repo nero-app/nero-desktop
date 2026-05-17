@@ -6,7 +6,7 @@ permissions = [
     "core:default",
     "dialog:default",
     "nero-extensions:allow-get-preferences",
-    "nero-extensions:allow-set-processor-preferences",
+    "nero-extensions:allow-set-media-proxy-preferences",
     "nero-extensions:allow-get-extension-metadata",
     "nero-extensions:allow-load-extension",
     "nero-extensions:allow-get-filters",

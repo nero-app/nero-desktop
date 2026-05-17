@@ -5,9 +5,9 @@ use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 
 use libnero::{Extension, ExtensionHost, types::ExtensionOptions};
 use librqbit::Session;
-use nero_processor::{
-    Processor,
-    torrent::{RqbitTorrentBackend, TorrentBackend},
+use nero_media_proxy::{
+    MediaProxy, MediaProxyConfig,
+    torrent::{TorrentBackend, librqbit::RqbitTorrentBackend},
 };
 use reqwest::Client;
 use tauri::{
@@ -16,6 +16,7 @@ use tauri::{
 };
 
 use tauri::{Emitter, Result, async_runtime::RwLock};
+use tokio::net::TcpListener;
 
 use crate::preferences::PreferencesData;
 
@@ -25,10 +26,10 @@ struct PluginState {
 }
 
 impl PluginState {
-    async fn new(data: &PreferencesData, processor_addr: SocketAddr) -> Result<Self> {
+    async fn new(data: &PreferencesData, proxy_addr: SocketAddr) -> Result<Self> {
         let http_client = Client::new();
 
-        let torrent_backend = if let Some(torrent) = data.processor.as_ref()
+        let torrent_backend = if let Some(torrent) = data.media_proxy.as_ref()
             && torrent.torrent_enabled
         {
             let output_dir = PathBuf::from(&torrent.torrent_output_folder);
@@ -39,16 +40,14 @@ impl PluginState {
             None
         };
 
-        let processor = Processor::with_config(
-            processor_addr,
-            http_client,
-            nero_processor::Config {
-                torrent_backend,
-                ..Default::default()
-            },
-        );
+        let config = MediaProxyConfig {
+            torrent_backend,
+            // TODO: torrent_file_selector
+            ..Default::default()
+        };
+        let proxy = MediaProxy::new(proxy_addr, http_client, config);
 
-        let host = ExtensionHost::new(processor);
+        let host = ExtensionHost::new(proxy);
 
         let initial_extension = if let Some(prefs) = data.extension.as_ref() {
             let options = ExtensionOptions {
@@ -68,18 +67,21 @@ impl PluginState {
     }
 }
 
-pub fn init<R: Runtime>(processor_addr: SocketAddr) -> TauriPlugin<R> {
+pub fn init<R: Runtime>(proxy_addr: SocketAddr) -> TauriPlugin<R> {
     plugin::Builder::new("nero-extensions")
         .setup(move |app, _| {
             let preferences = PreferencesData::new(app);
             let app_handle = app.clone();
             tauri::async_runtime::spawn(async move {
-                let state = PluginState::new(&preferences, processor_addr)
-                    .await
-                    .unwrap();
+                let state = PluginState::new(&preferences, proxy_addr).await.unwrap();
 
-                let processor = state.host.processor().clone();
-                tauri::async_runtime::spawn(async move { processor.run().await.unwrap() });
+                let proxy = state.host.media_proxy();
+                let app = proxy.router();
+
+                tauri::async_runtime::spawn(async move {
+                    let listener = TcpListener::bind(proxy_addr).await.unwrap();
+                    axum::serve(listener, app).await
+                });
 
                 app_handle.manage(RwLock::new(preferences));
                 app_handle.manage(state);
@@ -90,7 +92,7 @@ pub fn init<R: Runtime>(processor_addr: SocketAddr) -> TauriPlugin<R> {
         })
         .invoke_handler(tauri::generate_handler![
             preferences::get_preferences,
-            preferences::set_processor_preferences,
+            preferences::set_media_proxy_preferences,
             extensions::get_extension_metadata,
             extensions::load_extension,
             extensions::get_filters,

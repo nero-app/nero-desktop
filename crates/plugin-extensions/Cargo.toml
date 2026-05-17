@@ -9,12 +9,12 @@ tauri-plugin = { version = "2.5.1", features = ["build"] }
 
 [dependencies]
 anyhow.workspace = true
-libnero = { git = "https://github.com/nero-app/libnero.git", rev = "95935cc", features = [
+axum = "0.8.6"
+libnero = { git = "https://github.com/nero-app/libnero.git", rev = "3094924", features = [
     "torrent",
 ] }
 librqbit = "8.1.1"
-nero-processor = { git = "https://github.com/nero-app/libnero.git", rev = "95935cc", features = [
-    "torrent",
+nero-media-proxy = { git = "https://github.com/nero-app/libnero.git", rev = "3094924", features = [
     "torrent-librqbit",
 ] }
 reqwest.workspace = true
@@ -22,4 +22,5 @@ serde.workspace = true
 serde_json.workspace = true
 tauri = { version = "2", default-features = false }
 tauri-plugin-store = { workspace = true }
+tokio = { workspace = true, features = ["net"] }
 tracing = { workspace = true }

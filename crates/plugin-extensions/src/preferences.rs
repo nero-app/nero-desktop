@@ -4,7 +4,7 @@ use tauri_plugin_store::StoreExt;
 
 #[derive(Serialize, Deserialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ProcessorPreferences {
+pub struct MediaProxyPreferences {
     pub torrent_enabled: bool,
     pub torrent_output_folder: String,
 }
@@ -21,7 +21,7 @@ pub struct ExtensionPreferences {
 #[serde(rename_all = "camelCase")]
 pub struct PreferencesData {
     pub extension: Option<ExtensionPreferences>,
-    pub processor: Option<ProcessorPreferences>,
+    pub media_proxy: Option<MediaProxyPreferences>,
 }
 
 impl PreferencesData {
@@ -53,12 +53,12 @@ pub async fn get_preferences(
 }
 
 #[tauri::command]
-pub async fn set_processor_preferences<R: Runtime>(
+pub async fn set_media_proxy_preferences<R: Runtime>(
     preferences: tauri::State<'_, RwLock<PreferencesData>>,
     app: AppHandle<R>,
-    processor: ProcessorPreferences,
+    media_proxy: MediaProxyPreferences,
 ) -> Result<()> {
     let mut data = preferences.write().await;
-    data.processor = Some(processor);
+    data.media_proxy = Some(media_proxy);
     data.save(&app)
 }

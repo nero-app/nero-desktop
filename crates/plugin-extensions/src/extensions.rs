@@ -114,7 +114,7 @@ pub async fn get_series_videos(
     state: State<'_, PluginState>,
     series_id: &str,
     episode_id: &str,
-    episode_number: u32,
+    episode_number: u32, // TODO: torrent file selector
 ) -> Result<Vec<Video>> {
     let guard = state.extension.read().await;
     let extension = guard
@@ -122,7 +122,7 @@ pub async fn get_series_videos(
         .ok_or(anyhow::anyhow!("extension not loaded"))?;
 
     extension
-        .get_series_videos(series_id, episode_id, episode_number)
+        .get_series_videos(series_id, episode_id)
         .await
         .map_err(Into::into)
 }

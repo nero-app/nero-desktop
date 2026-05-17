@@ -3,9 +3,9 @@ import SettingsLayout from "./layouts/SettingsLayout";
 import AppSettingsPage from "./pages/AppSettingsPage";
 import ExtensionsSettingsPage from "./pages/ExtensionsSettingsPage";
 import HomePage from "./pages/HomePage";
-import ProcessorSettingsPage from "./pages/ProcessorSettingsPage";
 import SearchPage from "./pages/SearchPage";
 import SeriesPage from "./pages/SeriesPage";
+import StreamingSettingsPage from "./pages/StreamingSettingsPage";
 import { AppPreferencesProvider } from "./providers/AppPreferencesProvider";
 import { ExtensionPreferencesProvider } from "./providers/ExtensionPreferencesProvider";
 import { Navigate, Route, Router } from "@solidjs/router";
@@ -27,7 +27,7 @@ export default function App() {
 
             <Route path="/app" component={AppSettingsPage} />
             <Route path="/extensions" component={ExtensionsSettingsPage} />
-            <Route path="/processor" component={ProcessorSettingsPage} />
+            <Route path="/streaming" component={StreamingSettingsPage} />
           </Route>
         </Router>
       </ExtensionPreferencesProvider>

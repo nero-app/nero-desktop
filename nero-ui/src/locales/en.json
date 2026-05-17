@@ -18,7 +18,7 @@
     "extensions": "Extensions",
     "settings": "Settings",
     "app": "App",
-    "processor": "Processor"
+    "streaming": "Streaming"
   },
   "media": {
     "episodes": "Episodes",
@@ -78,9 +78,9 @@
         "max_cache_size_exceeded": "Cannot exceed the maximum allowed size"
       }
     },
-    "processor": {
-      "title": "Processor",
-      "subtitle": "Configure how the application processes and serves content",
+    "streaming": {
+      "title": "Streaming",
+      "subtitle": "Configure how the application fetches and streams content",
       "torrent": {
         "title": "Torrent Support",
         "description": "Enable built-in torrent functionality",
