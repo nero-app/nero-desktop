@@ -118,8 +118,8 @@ export default function SeriesPage() {
         </Switch>
 
         <Tabs defaultValue="episodes">
-          <Tabs.List class="flex w-full justify-between border-t">
-            <Tabs.Trigger value="episodes" class="tab-trigger">
+          <Tabs.List class="tabs-list">
+            <Tabs.Trigger value="episodes" class="tabs-trigger">
               <Typography as="span">{t("media.episodes")}</Typography>
             </Tabs.Trigger>
           </Tabs.List>

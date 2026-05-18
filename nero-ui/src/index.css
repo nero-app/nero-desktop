@@ -11,16 +11,20 @@ a {
   -webkit-user-drag: none;
 }
 
-.tab-trigger {
-  @apply relative flex-1 cursor-pointer py-2.5 text-center text-sm text-neutral-500 transition-colors hover:text-neutral-700;
+.tabs-list {
+  @apply flex w-full justify-between border-t-2 border-t-neutral-200;
 }
 
-.tab-trigger[data-selected] {
-  @apply border-t border-neutral-900 font-semibold text-neutral-900;
+.tabs-trigger {
+  @apply relative flex-1 cursor-pointer py-2.5 text-center text-sm text-neutral-500 transition-colors hover:text-neutral-800;
 }
 
-.tab-trigger[data-selected]::after {
-  content: '';
+.tabs-trigger[data-selected] {
+  @apply -mt-0.5 border-t-2 border-neutral-900 font-semibold text-neutral-900;
+}
+
+.tabs-trigger[data-selected]::after {
+  content: "";
   @apply absolute top-0 left-1/2 -translate-x-1/2;
   @apply border-t-[6px] border-r-[6px] border-l-[6px];
   @apply border-t-neutral-900 border-r-transparent border-l-transparent;
