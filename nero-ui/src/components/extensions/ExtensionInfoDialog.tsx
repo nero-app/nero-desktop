@@ -6,7 +6,7 @@ import {
   type ExtensionPreferences,
   type Metadata,
 } from "@nero/plugin-extensions";
-import { type ComponentProps, splitProps, ErrorBoundary } from "solid-js";
+import { type ComponentProps, splitProps } from "solid-js";
 
 type ExtensionInfoDialogProps = ComponentProps<typeof Dialog> & {
   preferences: ExtensionPreferences;
@@ -25,14 +25,10 @@ export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
       />
 
       <Dialog.Content class="grid grid-cols-[1fr_auto_1fr] gap-4 p-4">
-        <ErrorBoundary
-          fallback={(err) => <Typography>{err.message}</Typography>}
-        >
-          <ExtensionMetaPanel
-            filePath={local.preferences.filePath}
-            metadata={local.metadata}
-          />
-        </ErrorBoundary>
+        <ExtensionMetaPanel
+          filePath={local.preferences.filePath}
+          metadata={local.metadata}
+        />
 
         <hr class="h-full border border-neutral-200" />
 
