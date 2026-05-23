@@ -1,3 +1,4 @@
+import { DialogOverlay } from "./components/ui/DialogManager";
 import Layout from "./layouts/Layout";
 import SettingsLayout from "./layouts/SettingsLayout";
 import AppSettingsPage from "./pages/AppSettingsPage";
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/streaming" component={StreamingSettingsPage} />
           </Route>
         </Router>
+        <DialogOverlay />
       </ExtensionPreferencesProvider>
     </AppPreferencesProvider>
   );

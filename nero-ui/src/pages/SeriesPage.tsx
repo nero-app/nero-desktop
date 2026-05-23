@@ -1,6 +1,7 @@
 import EpisodeCard from "../components/media/EpisodeCard";
 import VideoSelector from "../components/media/VideoSelector";
 import { Button } from "../components/ui/Button";
+import { dialogManager } from "../components/ui/DialogManager";
 import { Typography } from "../components/ui/Typography";
 import { MediaLayout } from "../layouts/MediaLayout";
 import { t } from "../lib/i18n";
@@ -10,40 +11,30 @@ import { Tabs } from "@kobalte/core/tabs";
 import type { Episode } from "@nero/plugin-extensions";
 import { A, useParams } from "@solidjs/router";
 import { ImageOffIcon, PlayIcon, Share2Icon, ThumbsUpIcon } from "lucide-solid";
-import { Switch, Match, createSignal, Show, For } from "solid-js";
+import { Switch, Match, For } from "solid-js";
 
 export default function SeriesPage() {
   const extensionPreferences = useExtensionPreferences();
   const params = useParams<{ seriesId: string }>();
-
-  const [isOpen, setIsOpen] = createSignal(false);
-  const [selectedEpisode, setSelectedEpisode] = createSignal<Episode | null>(
-    null,
-  );
 
   const { seriesQuery, episodesQuery, sentinel } = createSeries(
     () => params.seriesId,
   );
   const firstEpisode = () => episodesQuery()?.[0] ?? null;
 
-  const handleEpisodeClick = (episode: Episode) => {
-    setSelectedEpisode(episode);
-    setIsOpen(true);
-  };
+  function handleEpisodeClick(episode: Episode) {
+    dialogManager.show((props) => (
+      <VideoSelector
+        seriesId={params.seriesId}
+        episode={episode}
+        open={props.open}
+        onOpenChange={props.onOpenChange}
+      />
+    ));
+  }
 
   return (
     <MediaLayout>
-      <Show when={selectedEpisode()}>
-        {(episode) => (
-          <VideoSelector
-            seriesId={params.seriesId}
-            episode={episode()}
-            open={isOpen()}
-            onOpenChange={setIsOpen}
-          />
-        )}
-      </Show>
-
       <MediaLayout.Media>
         <Switch>
           <Match when={seriesQuery.loading}>
