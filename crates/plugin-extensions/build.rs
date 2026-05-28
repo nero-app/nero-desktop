@@ -1,8 +1,10 @@
 const COMMANDS: &[&str] = &[
-    "get_preferences",
+    "get_media_proxy_preferences",
     "set_media_proxy_preferences",
     "get_extension_metadata",
     "load_extension",
+    "unload_extension",
+    "get_loaded_extensions",
     "get_filters",
     "search",
     "get_series_info",

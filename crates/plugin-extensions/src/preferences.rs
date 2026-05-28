@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter, Result, Runtime, State, async_runtime::RwLock};
+use tauri::{AppHandle, Result, Runtime, State, async_runtime::RwLock};
 use tauri_plugin_store::StoreExt;
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -11,16 +12,23 @@ pub struct MediaProxyPreferences {
 
 #[derive(Serialize, Deserialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ExtensionPreferences {
-    pub file_path: String,
+pub struct ExtensionOptions {
     pub cache_dir: String,
     pub max_cache_size: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct StoredExtension {
+    pub id: Uuid,
+    pub file_path: String,
+    pub options: ExtensionOptions,
+}
+
+#[derive(Serialize, Deserialize, Default, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct PreferencesData {
-    pub extension: Option<ExtensionPreferences>,
+    pub extensions: Vec<StoredExtension>,
     pub media_proxy: Option<MediaProxyPreferences>,
 }
 
@@ -40,16 +48,15 @@ impl PreferencesData {
         let store = app.store(Self::STORE_FILE).unwrap();
         store.set(Self::PREFERENCES_KEY, serde_json::to_value(self).unwrap());
         store.save().unwrap();
-        app.emit("nero-extensions://preferences-changed", self)?;
         Ok(())
     }
 }
 
 #[tauri::command]
-pub async fn get_preferences(
+pub async fn get_media_proxy_preferences(
     preferences: State<'_, RwLock<PreferencesData>>,
-) -> Result<PreferencesData> {
-    Ok(preferences.read().await.clone())
+) -> Result<Option<MediaProxyPreferences>> {
+    Ok(preferences.read().await.media_proxy.clone())
 }
 
 #[tauri::command]
@@ -59,6 +66,7 @@ pub async fn set_media_proxy_preferences<R: Runtime>(
     media_proxy: MediaProxyPreferences,
 ) -> Result<()> {
     let mut data = preferences.write().await;
-    data.media_proxy = Some(media_proxy);
-    data.save(&app)
+    data.media_proxy = Some(media_proxy.clone());
+    data.save(&app)?;
+    Ok(())
 }

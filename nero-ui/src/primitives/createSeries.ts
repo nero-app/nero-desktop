@@ -7,12 +7,18 @@ import {
 } from "@nero/plugin-extensions";
 import { createResource, type Accessor } from "solid-js";
 
-export function createSeries(seriesId: Accessor<string>) {
-  const [seriesQuery] = createResource(seriesId, getSeriesInfo);
+export function createSeries(
+  extensionId: Accessor<string>,
+  seriesId: Accessor<string>,
+) {
+  const [seriesQuery] = createResource(
+    () => ({ extensionId: extensionId(), seriesId: seriesId() }),
+    ({ extensionId, seriesId }) => getSeriesInfo(extensionId, seriesId),
+  );
 
   const [episodesQuery, { loadNext }] = createInfiniteResource<Episode>(
     async (page) => {
-      const result = await getSeriesEpisodes(seriesId(), page);
+      const result = await getSeriesEpisodes(extensionId(), seriesId(), page);
       return { items: result.items, hasMore: result.hasNextPage };
     },
   );

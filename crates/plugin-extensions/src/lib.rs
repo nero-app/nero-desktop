@@ -1,7 +1,7 @@
 mod extensions;
 mod preferences;
 
-use std::{net::SocketAddr, path::PathBuf, sync::Arc};
+use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
 
 use libnero::{Extension, ExtensionHost, types::ExtensionOptions};
 use librqbit::Session;
@@ -17,12 +17,13 @@ use tauri::{
 
 use tauri::{Emitter, Result, async_runtime::RwLock};
 use tokio::net::TcpListener;
+use uuid::Uuid;
 
 use crate::preferences::PreferencesData;
 
 struct PluginState {
     host: ExtensionHost,
-    extension: RwLock<Option<Extension>>,
+    extensions: RwLock<HashMap<Uuid, Extension>>,
 }
 
 impl PluginState {
@@ -49,20 +50,26 @@ impl PluginState {
 
         let host = ExtensionHost::new(proxy);
 
-        let initial_extension = if let Some(prefs) = data.extension.as_ref() {
+        let mut extensions = HashMap::new();
+        for extension in &data.extensions {
             let options = ExtensionOptions {
-                cache_dir: PathBuf::from(&prefs.cache_dir),
-                max_cache_size: prefs.max_cache_size,
+                cache_dir: PathBuf::from(&extension.options.cache_dir),
+                max_cache_size: extension.options.max_cache_size,
             };
-            let extension = host.load(&prefs.file_path, options).await?;
-            Some(extension)
-        } else {
-            None
-        };
+            match host.load(&extension.file_path, options).await {
+                Ok(ext) => {
+                    extensions.insert(extension.id, ext);
+                }
+                Err(e) => tracing::warn!(
+                    "Failed to load extension {} on startup: {e}",
+                    extension.file_path
+                ),
+            }
+        }
 
         Ok(Self {
             host,
-            extension: RwLock::new(initial_extension),
+            extensions: RwLock::new(extensions),
         })
     }
 }
@@ -91,10 +98,12 @@ pub fn init<R: Runtime>(proxy_addr: SocketAddr) -> TauriPlugin<R> {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            preferences::get_preferences,
+            preferences::get_media_proxy_preferences,
             preferences::set_media_proxy_preferences,
             extensions::get_extension_metadata,
             extensions::load_extension,
+            extensions::unload_extension,
+            extensions::get_loaded_extensions,
             extensions::get_filters,
             extensions::search,
             extensions::get_series_info,

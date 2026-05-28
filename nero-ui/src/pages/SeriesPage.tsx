@@ -6,7 +6,6 @@ import { Typography } from "../components/ui/Typography";
 import { MediaLayout } from "../layouts/MediaLayout";
 import { t } from "../lib/i18n";
 import { createSeries } from "../primitives/createSeries";
-import { useExtensionPreferences } from "../providers/ExtensionPreferencesProvider";
 import { Tabs } from "@kobalte/core/tabs";
 import type { Episode } from "@nero/plugin-extensions";
 import { A, useParams } from "@solidjs/router";
@@ -14,17 +13,21 @@ import { ImageOffIcon, PlayIcon, Share2Icon, ThumbsUpIcon } from "lucide-solid";
 import { Switch, Match, For } from "solid-js";
 
 export default function SeriesPage() {
-  const extensionPreferences = useExtensionPreferences();
-  const params = useParams<{ seriesId: string }>();
+  const params = useParams<{ extensionId: string; seriesId: string }>();
+
+  const extensionId = () => params.extensionId;
+  const seriesId = () => params.seriesId;
 
   const { seriesQuery, episodesQuery, sentinel } = createSeries(
-    () => params.seriesId,
+    extensionId,
+    seriesId,
   );
   const firstEpisode = () => episodesQuery()?.[0] ?? null;
 
   function handleEpisodeClick(episode: Episode) {
     dialogManager.show((props) => (
       <VideoSelector
+        extensionId={extensionId()}
         seriesId={params.seriesId}
         episode={episode}
         open={props.open}
@@ -79,7 +82,7 @@ export default function SeriesPage() {
                 </Typography>
                 <A class="truncate underline" href="/settings/extensions">
                   <Typography variant="subtitle" as="span">
-                    {extensionPreferences().extension?.filePath}
+                    {extensionId()}
                   </Typography>
                 </A>
               </div>

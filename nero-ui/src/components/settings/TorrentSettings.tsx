@@ -1,24 +1,30 @@
 import { t } from "../../lib/i18n";
-import { useExtensionPreferences } from "../../providers/ExtensionPreferencesProvider";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
 import { Toggle } from "../ui/Toggle";
 import { Typography } from "../ui/Typography";
-import { setMediaProxyPreferences } from "@nero/plugin-extensions";
+import {
+  getMediaProxyPreferences,
+  setMediaProxyPreferences,
+} from "@nero/plugin-extensions";
 import { appCacheDir } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Show, createResource } from "solid-js";
 
 export default function TorrentSettings() {
-  const preferences = useExtensionPreferences();
+  const [preferences, { mutate }] = createResource(() =>
+    getMediaProxyPreferences(),
+  );
   const [defaultFolder] = createResource(appCacheDir, { initialValue: "" });
 
   async function handleToggle(value: boolean) {
-    await setMediaProxyPreferences({
+    const updated = {
       torrentEnabled: value,
       torrentOutputFolder:
-        preferences().mediaProxy?.torrentOutputFolder ?? defaultFolder(),
-    });
+        preferences()?.torrentOutputFolder ?? defaultFolder(),
+    };
+    await setMediaProxyPreferences(updated);
+    mutate(updated);
   }
 
   async function selectOutputFolder() {
@@ -27,18 +33,22 @@ export default function TorrentSettings() {
       directory: true,
     });
     if (dir) {
-      await setMediaProxyPreferences({
-        torrentEnabled: preferences().mediaProxy?.torrentEnabled ?? false,
+      const updated = {
+        torrentEnabled: preferences()?.torrentEnabled ?? false,
         torrentOutputFolder: dir,
-      });
+      };
+      await setMediaProxyPreferences(updated);
+      mutate(updated);
     }
   }
 
   async function resetOutputFolder() {
-    await setMediaProxyPreferences({
-      torrentEnabled: preferences().mediaProxy?.torrentEnabled ?? false,
+    const updated = {
+      torrentEnabled: preferences()?.torrentEnabled ?? false,
       torrentOutputFolder: defaultFolder(),
-    });
+    };
+    await setMediaProxyPreferences(updated);
+    mutate(updated);
   }
 
   return (
@@ -58,27 +68,26 @@ export default function TorrentSettings() {
             </Typography>
           </div>
           <Toggle
-            checked={preferences().mediaProxy?.torrentEnabled ?? false}
+            checked={preferences()?.torrentEnabled}
             onChange={handleToggle}
           />
         </div>
 
-        <Show when={preferences().mediaProxy?.torrentEnabled}>
+        <Show when={preferences()?.torrentEnabled}>
           <div class="flex items-center justify-between gap-4">
             <div class="min-w-0">
               <Typography variant="h4">
                 {t("settings.streaming.torrent.output_folder_label")}
               </Typography>
               <Typography variant="subtitle" class="truncate">
-                {preferences().mediaProxy?.torrentOutputFolder ||
-                  defaultFolder()}
+                {preferences()?.torrentOutputFolder || defaultFolder()}
               </Typography>
             </div>
             <div class="flex shrink-0 gap-2">
               <Button variant="outline" size="sm" onClick={selectOutputFolder}>
                 <Typography as="span">{t("common.change")}</Typography>
               </Button>
-              <Show when={preferences().mediaProxy?.torrentOutputFolder}>
+              <Show when={preferences()?.torrentOutputFolder}>
                 <Button variant="outline" size="sm" onClick={resetOutputFolder}>
                   <Typography as="span">{t("common.reset")}</Typography>
                 </Button>

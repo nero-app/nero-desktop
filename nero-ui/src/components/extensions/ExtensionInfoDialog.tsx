@@ -2,32 +2,29 @@ import { t } from "../../lib/i18n";
 import { Dialog } from "../ui/Dialog";
 import { Typography } from "../ui/Typography";
 import { ExtensionMetaPanel } from "./ExtensionMetaPanel";
-import {
-  type ExtensionPreferences,
-  type Metadata,
-} from "@nero/plugin-extensions";
+import { type LoadedExtension } from "@nero/plugin-extensions";
 import { type ComponentProps, splitProps } from "solid-js";
 
 type ExtensionInfoDialogProps = ComponentProps<typeof Dialog> & {
-  preferences: ExtensionPreferences;
-  metadata: Metadata;
+  extension: LoadedExtension;
 };
 
 export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
-  const [local, dialogProps] = splitProps(props, ["preferences", "metadata"]);
+  const [local, dialogProps] = splitProps(props, ["extension"]);
 
   return (
     <Dialog {...dialogProps}>
       <Dialog.Header
         title={
-          local.metadata.name ?? t("settings.extensions.meta.fallback_title")
+          local.extension.metadata.name ??
+          t("settings.extensions.meta.fallback_title")
         }
       />
 
       <Dialog.Content class="grid grid-cols-[1fr_auto_1fr] gap-4 p-4">
         <ExtensionMetaPanel
-          filePath={local.preferences.filePath}
-          metadata={local.metadata}
+          filePath={local.extension.filePath}
+          metadata={local.extension.metadata}
         />
 
         <hr class="h-full border border-neutral-200" />
@@ -41,7 +38,9 @@ export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
             <Typography variant="subtitle">
               {t("settings.extensions.options.cache_dir")}
             </Typography>
-            <Typography as="code">{local.preferences.cacheDir}</Typography>
+            <Typography as="code">
+              {local.extension.options.cacheDir}
+            </Typography>
           </div>
 
           <div class="flex flex-col gap-2">
@@ -49,8 +48,8 @@ export function ExtensionInfoDialog(props: ExtensionInfoDialogProps) {
               {t("settings.extensions.options.max_cache_size")}
             </Typography>
             <Typography>
-              {local.preferences.maxCacheSize
-                ? `${local.preferences.maxCacheSize! / 1024 / 1024} MB`
+              {local.extension.options.maxCacheSize
+                ? `${local.extension.options.maxCacheSize! / 1024 / 1024} MB`
                 : "0 MB"}
             </Typography>
           </div>

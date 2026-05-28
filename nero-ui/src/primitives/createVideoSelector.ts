@@ -3,12 +3,13 @@ import { invoke } from "@tauri-apps/api/core";
 import { createResource, type Accessor } from "solid-js";
 
 export function createVideoSelector(
+  extensionId: Accessor<string>,
   seriesId: Accessor<string>,
   episode: Accessor<Episode>,
 ) {
   const [videosResource] = createResource(
     () => ({ id: episode().id, num: episode().number }),
-    ({ id, num }) => getSeriesVideos(seriesId(), id, num),
+    ({ id, num }) => getSeriesVideos(extensionId(), seriesId(), id, num),
   );
 
   // TODO: Handle errors

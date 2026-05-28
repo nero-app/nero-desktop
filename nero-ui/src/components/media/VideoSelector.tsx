@@ -26,6 +26,7 @@ function VideoCard(props: { video: Video; onClick?: (video: Video) => void }) {
 }
 
 type VideoSelectorProps = ComponentProps<typeof Dialog> & {
+  extensionId: string;
   seriesId: string;
   episode: Episode;
   onOpenChange: (open: boolean) => void;
@@ -34,6 +35,7 @@ type VideoSelectorProps = ComponentProps<typeof Dialog> & {
 export default function VideoSelector(props: VideoSelectorProps) {
   const preferences = useAppPreferences();
   const { videosResource, selectVideo } = createVideoSelector(
+    () => props.extensionId,
     () => props.seriesId,
     () => props.episode,
   );

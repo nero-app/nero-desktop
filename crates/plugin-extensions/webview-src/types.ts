@@ -17,6 +17,13 @@ export interface ExtensionOptions {
   maxCacheSize?: number;
 }
 
+export interface LoadedExtension {
+  id: string;
+  filePath: string;
+  metadata: Metadata;
+  options: ExtensionOptions;
+}
+
 export interface Series {
   id: string;
   title: string;

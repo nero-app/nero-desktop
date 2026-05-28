@@ -8,19 +8,10 @@ export interface MediaProxyPreferences {
   torrentOutputFolder: string;
 }
 
-export interface ExtensionPreferences {
-  filePath: string;
-  cacheDir: string;
-  maxCacheSize?: number;
-}
-
-export interface PreferencesData {
-  extension?: ExtensionPreferences;
-  mediaProxy?: MediaProxyPreferences;
-}
-
-export async function getPreferences(): Promise<PreferencesData> {
-  return invoke("plugin:nero-extensions|get_preferences");
+export async function getMediaProxyPreferences(): Promise<
+  MediaProxyPreferences | undefined
+> {
+  return invoke("plugin:nero-extensions|get_media_proxy_preferences");
 }
 
 export async function setMediaProxyPreferences(

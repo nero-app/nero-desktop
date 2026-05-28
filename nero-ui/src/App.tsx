@@ -8,31 +8,25 @@ import SearchPage from "./pages/SearchPage";
 import SeriesPage from "./pages/SeriesPage";
 import StreamingSettingsPage from "./pages/StreamingSettingsPage";
 import { AppPreferencesProvider } from "./providers/AppPreferencesProvider";
-import { ExtensionPreferencesProvider } from "./providers/ExtensionPreferencesProvider";
 import { Navigate, Route, Router } from "@solidjs/router";
 
 export default function App() {
   return (
     <AppPreferencesProvider>
-      <ExtensionPreferencesProvider>
-        <Router root={Layout}>
-          <Route path="/" component={HomePage} />
-          <Route path="/search" component={SearchPage} />
-          <Route path="/series/:seriesId" component={SeriesPage} />
+      <Router root={Layout}>
+        <Route path="/" component={HomePage} />
+        <Route path="/search" component={SearchPage} />
+        <Route path="/series/:extensionId/:seriesId" component={SeriesPage} />
 
-          <Route path="/settings" component={SettingsLayout}>
-            <Route
-              path="/"
-              component={() => <Navigate href="/settings/app" />}
-            />
+        <Route path="/settings" component={SettingsLayout}>
+          <Route path="/" component={() => <Navigate href="/settings/app" />} />
 
-            <Route path="/app" component={AppSettingsPage} />
-            <Route path="/extensions" component={ExtensionsSettingsPage} />
-            <Route path="/streaming" component={StreamingSettingsPage} />
-          </Route>
-        </Router>
-        <DialogOverlay />
-      </ExtensionPreferencesProvider>
+          <Route path="/app" component={AppSettingsPage} />
+          <Route path="/extensions" component={ExtensionsSettingsPage} />
+          <Route path="/streaming" component={StreamingSettingsPage} />
+        </Route>
+      </Router>
+      <DialogOverlay />
     </AppPreferencesProvider>
   );
 }

@@ -5,10 +5,12 @@ windows = ["main"]
 permissions = [
     "core:default",
     "dialog:default",
-    "nero-extensions:allow-get-preferences",
+    "nero-extensions:allow-get-media-proxy-preferences",
     "nero-extensions:allow-set-media-proxy-preferences",
     "nero-extensions:allow-get-extension-metadata",
     "nero-extensions:allow-load-extension",
+    "nero-extensions:allow-unload-extension",
+    "nero-extensions:allow-get-loaded-extensions",
     "nero-extensions:allow-get-filters",
     "nero-extensions:allow-search",
     "nero-extensions:allow-get-series-info",

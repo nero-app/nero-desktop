@@ -56,7 +56,6 @@
       "load": "Load Extension",
       "loaded_label": "Loaded Extension",
       "status_idle": "No extensions loaded",
-      "single_notice": "Only one extension can be loaded at a time",
       "meta": {
         "fallback_title": "Extension",
         "version": "Version",

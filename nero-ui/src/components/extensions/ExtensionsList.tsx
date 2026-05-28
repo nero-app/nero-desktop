@@ -1,5 +1,4 @@
 import { t } from "../../lib/i18n";
-import { useExtensionPreferences } from "../../providers/ExtensionPreferencesProvider";
 import { Button } from "../ui/Button";
 import { dialogManager } from "../ui/DialogManager";
 import { SectionTable } from "../ui/SectionTable";
@@ -8,28 +7,24 @@ import { ExtensionCard } from "./ExtensionCard";
 import { ExtensionInfoDialog } from "./ExtensionInfoDialog";
 import { ExtensionLoadDialog } from "./ExtensionLoadDialog";
 import {
-  getExtensionMetadata,
-  type ExtensionPreferences,
-  type Metadata,
+  getLoadedExtensions,
+  unloadExtension,
+  type LoadedExtension,
 } from "@nero/plugin-extensions";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BlocksIcon } from "lucide-solid";
+import { For } from "solid-js";
 import { Show, createResource } from "solid-js";
 
 export default function ExtensionsList() {
-  const extensionPreferences = useExtensionPreferences();
-
-  const [metadata] = createResource(
-    () => extensionPreferences().extension?.filePath,
-    (filePath) => getExtensionMetadata(filePath) as Promise<Metadata>,
+  const [loadedExtensions, { refetch }] = createResource(() =>
+    getLoadedExtensions(),
   );
 
-  const extensionReady = () => {
-    const extension = extensionPreferences().extension;
-    const meta = metadata();
-    if (!extension || !meta) return undefined;
-    return { extension, metadata: meta };
-  };
+  async function handleUnload(filePath: string) {
+    await unloadExtension(filePath);
+    refetch();
+  }
 
   async function selectExtension() {
     const file = await open({
@@ -47,14 +42,10 @@ export default function ExtensionsList() {
     }
   }
 
-  function showExtensionInfo(
-    preferences: ExtensionPreferences,
-    metadata: Metadata,
-  ) {
+  function showExtensionInfo(extension: LoadedExtension) {
     dialogManager.show((props) => (
       <ExtensionInfoDialog
-        preferences={preferences}
-        metadata={metadata}
+        extension={extension}
         open={props.open}
         onOpenChange={props.onOpenChange}
       />
@@ -71,7 +62,7 @@ export default function ExtensionsList() {
 
       <SectionTable.Content>
         <Show
-          when={extensionReady()}
+          when={loadedExtensions()?.length}
           fallback={
             <div class="flex flex-col items-center gap-2 text-center">
               <BlocksIcon class="size-10 text-neutral-300" />
@@ -84,23 +75,17 @@ export default function ExtensionsList() {
             </div>
           }
         >
-          {(ready) => (
-            <ExtensionCard
-              preferences={ready().extension}
-              metadata={ready().metadata}
-              onClick={() =>
-                showExtensionInfo(ready().extension, ready().metadata)
-              }
-            />
-          )}
+          <For each={loadedExtensions()}>
+            {(extension) => (
+              <ExtensionCard
+                extension={extension}
+                onClick={() => showExtensionInfo(extension)}
+                onUnload={() => handleUnload(extension.id)}
+              />
+            )}
+          </For>
         </Show>
       </SectionTable.Content>
-
-      <SectionTable.Footer>
-        <Typography variant="caption">
-          {t("settings.extensions.single_notice")}
-        </Typography>
-      </SectionTable.Footer>
     </SectionTable>
   );
 }

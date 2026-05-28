@@ -7,6 +7,7 @@ import type {
   Series,
   Video,
   SearchFilter,
+  LoadedExtension,
 } from "./types";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -32,38 +33,64 @@ export async function loadExtension(
   return invoke("plugin:nero-extensions|load_extension", { filePath, options });
 }
 
-export async function getFilters(): Promise<FilterCategory[]> {
-  return invoke("plugin:nero-extensions|get_filters");
+export async function unloadExtension(extensionId: string): Promise<void> {
+  return invoke("plugin:nero-extensions|unload_extension", { extensionId });
+}
+
+export async function getLoadedExtensions(): Promise<LoadedExtension[]> {
+  return invoke("plugin:nero-extensions|get_loaded_extensions");
+}
+
+export async function getFilters(
+  extensionId: string,
+): Promise<FilterCategory[]> {
+  return invoke("plugin:nero-extensions|get_filters", { extensionId });
 }
 
 export async function search(
+  extensionId: string,
   query: string,
   page?: number,
   filters: SearchFilter[] = [],
 ): Promise<SeriesPage> {
-  return invoke("plugin:nero-extensions|search", { query, page, filters });
+  return invoke("plugin:nero-extensions|search", {
+    extensionId,
+    query,
+    page,
+    filters,
+  });
 }
 
-export async function getSeriesInfo(seriesId: string): Promise<Series> {
-  return invoke("plugin:nero-extensions|get_series_info", { seriesId });
+export async function getSeriesInfo(
+  extensionId: string,
+  seriesId: string,
+): Promise<Series> {
+  return invoke("plugin:nero-extensions|get_series_info", {
+    extensionId,
+    seriesId,
+  });
 }
 
 export async function getSeriesEpisodes(
+  extensionId: string,
   seriesId: string,
   page?: number,
 ): Promise<EpisodesPage> {
   return invoke("plugin:nero-extensions|get_series_episodes", {
+    extensionId,
     seriesId,
     page,
   });
 }
 
 export async function getSeriesVideos(
+  extensionId: string,
   seriesId: string,
   episodeId: string,
   episodeNumber: number,
 ): Promise<Video[]> {
   return invoke("plugin:nero-extensions|get_series_videos", {
+    extensionId,
     seriesId,
     episodeId,
     episodeNumber,

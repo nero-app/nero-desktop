@@ -3,13 +3,26 @@ import { Input } from "../components/ui/Input";
 import { Typography } from "../components/ui/Typography";
 import { SidebarLayout } from "../layouts/SidebarLayout";
 import { t } from "../lib/i18n";
-import { createFilters } from "../primitives/createFilters";
-import { createSearch } from "../primitives/createSearch";
+import { createExtensionsFilters } from "../primitives/createFilters";
+import { createExtensionsSearch } from "../primitives/createSearch";
 import { Accordion, Checkbox } from "@kobalte/core";
 import type { CheckboxRootProps } from "@kobalte/core/checkbox";
-import type { Filter, FilterCategory } from "@nero/plugin-extensions";
+import {
+  getLoadedExtensions,
+  type Filter,
+  type FilterCategory,
+} from "@nero/plugin-extensions";
 import { SearchIcon, CheckIcon } from "lucide-solid";
-import { For, type JSX, Match, Show, Switch, splitProps } from "solid-js";
+import {
+  For,
+  type JSX,
+  Match,
+  Show,
+  Switch,
+  createResource,
+  createSignal,
+  splitProps,
+} from "solid-js";
 
 type FilterItemProps = CheckboxRootProps & {
   filter: Filter;
@@ -79,37 +92,42 @@ function FilterCategoryList(props: {
 }
 
 export default function SearchPage() {
-  const filters = createFilters();
-  const { series, sentinel, query, setQuery, reset } = createSearch(
-    filters.selected,
+  const [extensions] = createResource(() => getLoadedExtensions(), {
+    initialValue: [],
+  });
+  const [query, setQuery] = createSignal("");
+
+  const { items: filterItems, filtersFor } =
+    createExtensionsFilters(extensions);
+  const { allSeries, isLoading, sentinel, reset } = createExtensionsSearch(
+    extensions,
+    query,
+    filtersFor,
   );
 
   return (
     <SidebarLayout>
       <SidebarLayout.Main as="section">
         <Switch>
-          <Match when={series.loading && series().length === 0}>
+          <Match when={isLoading() && allSeries().length === 0}>
             <Typography>{t("common.loading")}</Typography>
           </Match>
-          <Match when={series.error}>
-            <Typography>{series.error.message}</Typography>
-          </Match>
-          <Match when={series().length > 0}>
+          <Match when={allSeries().length > 0}>
             <ul class="grid grid-cols-4">
-              <For each={series()}>
-                {(s) => (
+              <For each={allSeries()}>
+                {({ series, ext }) => (
                   <li>
-                    <SeriesCard series={s} />
+                    <SeriesCard series={series} extensionId={ext.id} />
                   </li>
                 )}
               </For>
               <div ref={sentinel} />
-              <Show when={series.loading}>
+              <Show when={isLoading()}>
                 <Typography>{t("common.loading")}</Typography>
               </Show>
             </ul>
           </Match>
-          <Match when={!series.loading && series().length === 0}>
+          <Match when={!isLoading() && allSeries().length === 0}>
             <Typography>{t("media.no_results")}</Typography>
           </Match>
         </Switch>
@@ -135,27 +153,36 @@ export default function SearchPage() {
           />
         </form>
 
-        <Switch fallback={<Typography>{t("filters.empty")}</Typography>}>
-          <Match when={filters.categories.loading}>
-            <Typography>{t("common.loading")}</Typography>
-          </Match>
-          <Match when={filters.categories.error}>
-            <Typography>{filters.categories.error.message}</Typography>
-          </Match>
-          <Match when={filters.categories()}>
-            {(cats) => (
-              <FilterCategoryList categories={cats()}>
-                {(category, filter) => (
-                  <FilterItem
-                    filter={filter}
-                    checked={filters.isSelected(category.id, filter.id)}
-                    onChange={() => filters.toggle(category.id, filter.id)}
-                  />
-                )}
-              </FilterCategoryList>
-            )}
-          </Match>
-        </Switch>
+        <For each={filterItems()}>
+          {({ ext, categories, isSelected, toggle }) => (
+            <div class="flex flex-col gap-2">
+              <Show when={filterItems().length > 1}>
+                <Typography>{ext.metadata.name ?? ext.filePath}</Typography>
+              </Show>
+              <Switch fallback={<Typography>{t("filters.empty")}</Typography>}>
+                <Match when={categories.loading}>
+                  <Typography>{t("common.loading")}</Typography>
+                </Match>
+                <Match when={categories.error}>
+                  <Typography>{categories.error.message}</Typography>
+                </Match>
+                <Match when={categories()}>
+                  {(cats) => (
+                    <FilterCategoryList categories={cats()}>
+                      {(category, filter) => (
+                        <FilterItem
+                          filter={filter}
+                          checked={isSelected(category.id, filter.id)}
+                          onChange={() => toggle(category.id, filter.id)}
+                        />
+                      )}
+                    </FilterCategoryList>
+                  )}
+                </Match>
+              </Switch>
+            </div>
+          )}
+        </For>
       </SidebarLayout.Sidebar>
     </SidebarLayout>
   );
