@@ -1,3 +1,4 @@
+import { ExtensionInfoDialog } from "../components/extensions/ExtensionInfoDialog";
 import EpisodeCard from "../components/media/EpisodeCard";
 import VideoSelector from "../components/media/VideoSelector";
 import { Button } from "../components/ui/Button";
@@ -7,16 +8,20 @@ import { MediaLayout } from "../layouts/MediaLayout";
 import { t } from "../lib/i18n";
 import { createSeries } from "../primitives/createSeries";
 import { Tabs } from "@kobalte/core/tabs";
-import type { Episode } from "@nero/plugin-extensions";
-import { A, useParams } from "@solidjs/router";
+import { getLoadedExtensions, type Episode } from "@nero/plugin-extensions";
+import { useParams } from "@solidjs/router";
 import { ImageOffIcon, PlayIcon, Share2Icon, ThumbsUpIcon } from "lucide-solid";
-import { Switch, Match, For } from "solid-js";
+import { Switch, Match, For, createResource } from "solid-js";
 
 export default function SeriesPage() {
   const params = useParams<{ extensionId: string; seriesId: string }>();
 
   const extensionId = () => params.extensionId;
   const seriesId = () => params.seriesId;
+
+  const [loadedExtensions] = createResource(() => getLoadedExtensions());
+  const extension = () =>
+    loadedExtensions()?.find((e) => e.id === extensionId());
 
   const { seriesQuery, episodesQuery, sentinel } = createSeries(
     extensionId,
@@ -30,6 +35,18 @@ export default function SeriesPage() {
         extensionId={extensionId()}
         seriesId={params.seriesId}
         episode={episode}
+        open={props.open}
+        onOpenChange={props.onOpenChange}
+      />
+    ));
+  }
+
+  function handleExtensionClick() {
+    const ext = extension();
+    if (!ext) return;
+    dialogManager.show((props) => (
+      <ExtensionInfoDialog
+        extension={ext}
         open={props.open}
         onOpenChange={props.onOpenChange}
       />
@@ -80,11 +97,14 @@ export default function SeriesPage() {
                 <Typography variant="subtitle" as="span">
                   {t("common.separator")}
                 </Typography>
-                <A class="truncate underline" href="/settings/extensions">
+                <button
+                  class="cursor-pointer truncate underline"
+                  onClick={handleExtensionClick}
+                >
                   <Typography variant="subtitle" as="span">
-                    {extensionId()}
+                    {extension()?.filePath}
                   </Typography>
-                </A>
+                </button>
               </div>
               <Typography class="line-clamp-4">
                 {seriesQuery()?.synopsis}
