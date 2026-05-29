@@ -1,11 +1,11 @@
 import { t } from "../../lib/i18n";
-import { useAppPreferences } from "../../providers/AppPreferencesProvider";
+import type { AppPreferences } from "../../types/appPreferences";
 import { Button } from "../ui/Button";
 import { SectionTable } from "../ui/SectionTable";
 import { Typography } from "../ui/Typography";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Show } from "solid-js";
+import { createResource, Show } from "solid-js";
 
 const players = [
   { label: "VLC", href: "https://www.videolan.org/vlc/" },
@@ -25,7 +25,9 @@ function PlayerLink(props: { label: string; href: string }) {
 }
 
 export default function PlayerSettings() {
-  const preferences = useAppPreferences();
+  const [preferences, { mutate }] = createResource(() =>
+    invoke<AppPreferences>("get_preferences"),
+  );
 
   async function selectPlayer() {
     const file = await open({
@@ -35,6 +37,7 @@ export default function PlayerSettings() {
       await invoke("set_preferences", {
         data: { playerPath: file },
       });
+      mutate({ playerPath: file });
     }
   }
 
@@ -50,7 +53,7 @@ export default function PlayerSettings() {
             {t("settings.app.player.placeholder")}
           </Typography>
           <Show
-            when={preferences().playerPath}
+            when={preferences()?.playerPath}
             fallback={
               <Typography variant="subtitle" class="truncate">
                 {t("settings.app.player.browse_hint")}
@@ -58,7 +61,7 @@ export default function PlayerSettings() {
             }
           >
             <Typography variant="subtitle" class="truncate">
-              {preferences().playerPath}
+              {preferences()?.playerPath}
             </Typography>
           </Show>
         </div>

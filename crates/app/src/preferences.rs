@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use tauri::{async_runtime::RwLock, AppHandle, Emitter, Result, Runtime, State};
+use tauri::{async_runtime::RwLock, AppHandle, Result, Runtime, State};
 use tauri_plugin_store::StoreExt;
 
 #[derive(Serialize, Deserialize, Default, Clone)]
@@ -24,7 +24,6 @@ impl PreferencesData {
         let store = app.store(Self::STORE_FILE).unwrap();
         store.set(Self::PREFERENCES_KEY, serde_json::to_value(self).unwrap());
         store.save().unwrap();
-        app.emit("app://preferences-changed", self)?;
         Ok(())
     }
 }

@@ -1,12 +1,20 @@
 import { t } from "../../lib/i18n";
 import { createVideoSelector } from "../../primitives/createVideoSelector";
-import { useAppPreferences } from "../../providers/AppPreferencesProvider";
+import type { AppPreferences } from "../../types/appPreferences";
 import { Button } from "../ui/Button";
 import { Dialog } from "../ui/Dialog";
 import { Typography } from "../ui/Typography";
 import type { Episode, Video } from "@nero/plugin-extensions";
+import { invoke } from "@tauri-apps/api/core";
 import { ImageOff } from "lucide-solid";
-import { For, Match, Show, Switch, type ComponentProps } from "solid-js";
+import {
+  createResource,
+  For,
+  Match,
+  Show,
+  Switch,
+  type ComponentProps,
+} from "solid-js";
 
 function VideoCard(props: { video: Video; onClick?: (video: Video) => void }) {
   return (
@@ -33,7 +41,10 @@ type VideoSelectorProps = ComponentProps<typeof Dialog> & {
 };
 
 export default function VideoSelector(props: VideoSelectorProps) {
-  const preferences = useAppPreferences();
+  const [preferences] = createResource(() =>
+    invoke<AppPreferences>("get_preferences"),
+  );
+
   const { videosResource, selectVideo } = createVideoSelector(
     () => props.extensionId,
     () => props.seriesId,
@@ -68,7 +79,7 @@ export default function VideoSelector(props: VideoSelectorProps) {
         </div>
 
         <Switch>
-          <Match when={!preferences().playerPath}>
+          <Match when={!preferences()?.playerPath}>
             <div class="flex items-center justify-center px-4">
               <Typography>{t("media.player_not_configured")}</Typography>
             </div>
