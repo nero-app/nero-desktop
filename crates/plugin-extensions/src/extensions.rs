@@ -13,6 +13,7 @@ use uuid::Uuid;
 use crate::{
     PluginState,
     preferences::{PreferencesData, StoredExtension},
+    torrent_resolver::{ExtensionSearcher, TorrentResolver},
 };
 
 #[tauri::command]
@@ -38,7 +39,11 @@ pub async fn load_extension<R: Runtime>(
     let extension = state.host.load(file_path.clone(), options).await?;
     let id = Uuid::new_v4();
 
-    state.extensions.write().await.insert(id, extension);
+    state
+        .extensions
+        .write()
+        .await
+        .insert(id, Arc::new(extension));
 
     let mut data = preferences.write().await;
     data.extensions.retain(|e| e.file_path != file_path);
@@ -189,12 +194,21 @@ pub async fn get_series_videos(
     extension_id: Uuid,
     series_id: &str,
     episode_id: &str,
-    episode_number: u32, // TODO: torrent file selector
+    episode_number: u32,
 ) -> Result<Vec<Video>> {
     let guard = state.extensions.read().await;
     let extension = guard
         .get(&extension_id)
         .ok_or_else(|| anyhow::anyhow!("extension not loaded: {extension_id}"))?;
+
+    if let Some(handle) = &state.torrent_resolver_handle {
+        let resolver = Arc::new(TorrentResolver {
+            searcher: ExtensionSearcher(extension.clone()),
+            series_id: series_id.to_string(),
+            episode_number,
+        });
+        handle.set(resolver).await;
+    }
 
     extension
         .get_series_videos(series_id, episode_id)

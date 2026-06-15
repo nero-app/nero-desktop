@@ -1,5 +1,6 @@
 mod extensions;
 mod preferences;
+mod torrent_resolver;
 
 use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
 
@@ -7,7 +8,7 @@ use libnero::{Extension, ExtensionHost, types::ExtensionOptions};
 use librqbit::Session;
 use nero_media_proxy::{
     MediaProxy, MediaProxyConfig,
-    torrent::{TorrentBackend, librqbit::RqbitTorrentBackend},
+    torrent::{TorrentBackend, TorrentFileSelector, librqbit::RqbitTorrentBackend},
 };
 use reqwest::Client;
 use tauri::{
@@ -19,33 +20,42 @@ use tauri::{Emitter, Result, async_runtime::RwLock};
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
-use crate::preferences::PreferencesData;
+use crate::{preferences::PreferencesData, torrent_resolver::TorrentResolverHandle};
 
 struct PluginState {
     host: ExtensionHost,
-    extensions: RwLock<HashMap<Uuid, Extension>>,
+    extensions: RwLock<HashMap<Uuid, Arc<Extension>>>,
+    torrent_resolver_handle: Option<Arc<TorrentResolverHandle>>,
 }
 
 impl PluginState {
     async fn new(data: &PreferencesData, proxy_addr: SocketAddr) -> Result<Self> {
         let http_client = Client::new();
 
-        let torrent_backend = if let Some(torrent) = data.media_proxy.as_ref()
+        let (torrent_backend, torrent_resolver_handle) = if let Some(torrent) =
+            data.media_proxy.as_ref()
             && torrent.torrent_enabled
         {
             let output_dir = PathBuf::from(&torrent.torrent_output_folder);
             let librqbit_session = Session::new(output_dir).await?;
             let backend = RqbitTorrentBackend::new(librqbit_session, http_client.clone());
-            Some(Arc::new(backend) as Arc<dyn TorrentBackend + 'static>)
+
+            let handle = Arc::new(TorrentResolverHandle::new());
+            let config_backend = Some(Arc::new(backend) as Arc<dyn TorrentBackend + 'static>);
+
+            (config_backend, Some(Arc::clone(&handle)))
         } else {
-            None
+            (None, None)
         };
 
         let config = MediaProxyConfig {
             torrent_backend,
-            // TODO: torrent_file_selector
+            torrent_file_selector: torrent_resolver_handle
+                .as_ref()
+                .map(|h| Arc::clone(h) as Arc<dyn TorrentFileSelector + 'static>),
             ..Default::default()
         };
+
         let proxy = MediaProxy::new(proxy_addr, http_client, config);
 
         let host = ExtensionHost::new(proxy);
@@ -58,7 +68,7 @@ impl PluginState {
             };
             match host.load(&extension.file_path, options).await {
                 Ok(ext) => {
-                    extensions.insert(extension.id, ext);
+                    extensions.insert(extension.id, Arc::new(ext));
                 }
                 Err(e) => tracing::warn!(
                     "Failed to load extension {} on startup: {e}",
@@ -70,6 +80,7 @@ impl PluginState {
         Ok(Self {
             host,
             extensions: RwLock::new(extensions),
+            torrent_resolver_handle,
         })
     }
 }
