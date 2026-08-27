@@ -1,0 +1,12 @@
+module = "icons"
+
+[icons]
+blocks = "blocks"
+bookmark = "bookmark"
+image_off = "image-off"
+play = "play"
+search = "search"
+share = "share-2"
+thumbs_up = "thumbs-up"
+triangle_down = "chevron-down"
+x = "x"

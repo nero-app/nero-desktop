@@ -1,0 +1,73 @@
+_version = 1
+
+[common]
+loading = "Loading..."
+error_title = "Whoops..."
+empty = "Nothing found here."
+change = "Change"
+reset = "Reset"
+unlimited = "Unlimited"
+
+[nav]
+home = "Home"
+search = "Search"
+series = "Series"
+extensions = "Extensions"
+settings = "Settings"
+app = "App"
+
+[media]
+episodes = "Episodes"
+more_like_this = "More like this"
+episode = "Episode %{number}"
+episode_short = "Ep. %{number}"
+start_watching = "Start watching"
+search_placeholder = "Search series"
+no_results = "We couldn't find any series."
+no_extensions = "Load an extension to search."
+player_not_configured = "Choose a video player in settings first."
+
+[filters]
+empty = "No filters available"
+
+[settings.app]
+title = "Application"
+subtitle = "Customize how the application behaves"
+
+[settings.app.language]
+title = "Language"
+description = "Choose the language of the application"
+
+[settings.app.player]
+title = "Video Player"
+description = "Choose which application will open video files"
+not_selected = "No video player selected"
+
+[settings.extensions]
+title = "Extensions"
+subtitle = "Manage and load new content sources"
+load = "Load Extension"
+loaded_label = "Loaded Extensions"
+status_idle = "No extensions loaded"
+
+[settings.extensions.meta]
+fallback_title = "Extension"
+version = "Version"
+revision = "Revision"
+authors = "Authors"
+licenses = "Licenses"
+homepage = "Homepage"
+source = "Source"
+dependencies = "Dependencies"
+
+[settings.extensions.options]
+title = "Load Options"
+cache_dir = "Cache Directory"
+cache_dir_placeholder = "Select a directory..."
+max_cache_size = "Max Cache Size"
+max_cache_size_hint = "In MB, 0 for unlimited, up to %{max}."
+
+[settings.app.torrent]
+title = "Torrent Support"
+description = "Allow the application to stream and download torrents directly"
+output_folder_label = "Output Folder"
