@@ -3,6 +3,8 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 
 use nero_extensions::{WasmExtension, WasmHost};
+use percent_encoding::percent_decode_str;
+use url::Url;
 
 use crate::error::{Error, Result};
 
@@ -15,6 +17,7 @@ pub struct LoadedExtension {
     pub file_path: PathBuf,
     pub options: Options,
     pub extension: Arc<WasmExtension>,
+    callbacks: Arc<portal::Callbacks>,
 }
 
 #[derive(Default)]
@@ -55,11 +58,11 @@ impl Registry {
         );
         let interaction = Arc::new(portal::Interaction);
         let opener = Arc::new(portal::Opener);
-        let callbacks = Arc::new(portal::Callbacks);
+        let callbacks = Arc::new(portal::Callbacks::new(&id));
 
         let extension = self
             .host
-            .load_extension_async(&file_path, keyvalue, interaction, opener, callbacks)
+            .load_extension_async(&file_path, keyvalue, interaction, opener, callbacks.clone())
             .await
             .map_err(|error| Error::extension("load component", error))?;
 
@@ -68,6 +71,7 @@ impl Registry {
             file_path,
             options,
             extension: Arc::new(extension),
+            callbacks,
         };
 
         self.loaded.write().unwrap().insert(id, entry.clone());
@@ -89,5 +93,56 @@ impl Registry {
 
     pub fn values(&self) -> Vec<LoadedExtension> {
         self.loaded.read().unwrap().values().cloned().collect()
+    }
+
+    pub fn deliver_callback(&self, uri: String) -> Result<()> {
+        let mut callback =
+            Url::parse(&uri).map_err(|error| Error::InvalidCallbackUrl(error.to_string()))?;
+
+        if callback.scheme() != "nero"
+            || callback.host_str() != Some("callback")
+            || !callback.username().is_empty()
+            || callback.password().is_some()
+            || callback.port().is_some()
+        {
+            return Err(Error::InvalidCallbackUrl(uri));
+        }
+
+        callback.set_query(None);
+        callback.set_fragment(None);
+
+        let address = callback.to_string();
+
+        let mut segments = callback
+            .path_segments()
+            .ok_or_else(|| Error::InvalidCallbackUrl(uri.clone()))?;
+        let segment = segments
+            .next()
+            .filter(|segment| !segment.is_empty())
+            .ok_or_else(|| Error::InvalidCallbackUrl(uri.clone()))?;
+
+        if segments.next().is_some() {
+            return Err(Error::InvalidCallbackUrl(uri));
+        }
+
+        let id = ExtensionId(
+            percent_decode_str(segment)
+                .decode_utf8()
+                .map_err(|error| Error::InvalidCallbackUrl(error.to_string()))?
+                .into_owned(),
+        );
+        let callbacks = self
+            .loaded
+            .read()
+            .unwrap()
+            .get(&id)
+            .map(|extension| extension.callbacks.clone())
+            .ok_or_else(|| Error::CallbackNotPending(address.clone()))?;
+
+        if callbacks.address != address {
+            return Err(Error::CallbackNotPending(address));
+        }
+
+        callbacks.deliver(uri)
     }
 }

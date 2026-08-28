@@ -2,7 +2,7 @@ use std::net::Ipv4Addr;
 use std::sync::Arc;
 
 use iced::widget::{container, text};
-use iced::{Element, Fill, Task};
+use iced::{Element, Fill, Subscription, Task};
 use reqwest::Client;
 use rust_i18n::t;
 use tokio::net::TcpListener;
@@ -86,6 +86,7 @@ pub struct State {
 pub enum Message {
     Booted(Result<Boot>),
     MediaConfigured(Result<PreferenceAction>),
+    CallbackReceived(String),
     Home(home::Message),
     Search(search::Message),
     Series(series::Message),
@@ -126,6 +127,15 @@ impl State {
             }
             Message::MediaConfigured(Err(error)) => {
                 tracing::error!(%error, "failed to update media settings");
+                return Task::none();
+            }
+            Message::CallbackReceived(uri) => {
+                if let Status::Ready(boot) = &self.status {
+                    if let Err(error) = boot.extensions.deliver_callback(uri) {
+                        tracing::warn!(%error, "failed to deliver extension callback");
+                    }
+                }
+
                 return Task::none();
             }
             _ if !matches!(self.status, Status::Ready(_)) => return Task::none(),
@@ -247,6 +257,10 @@ impl State {
                 (Screen::Settings(screen), Task::none())
             }
         }
+    }
+
+    pub fn subscription(&self) -> Subscription<Message> {
+        iced::event::listen_url().map(Message::CallbackReceived)
     }
 
     pub fn view(&self) -> Element<'_, Message> {

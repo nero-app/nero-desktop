@@ -8,6 +8,15 @@ available-locales = ["en"]
 default-locale = "en"
 load-path = "locales"
 
+[package.metadata.packager]
+product-name = "Nero"
+identifier = "moe.nero.app"
+before-packaging-command = "cargo build --release"
+formats = ["app"]
+deep-link-protocols = [
+    { schemes = ["nero"], name = "moe.nero.app.callback", role = "viewer" },
+]
+
 [dependencies]
 iced = { git = "https://github.com/iced-rs/iced.git", rev = "3de4514", features = [
     "advanced",
@@ -33,6 +42,7 @@ dirs = "6.0.0"
 infer = "0.22.0"
 mime = "0.3.17"
 mime_guess = "2.0.5"
+percent-encoding = "2.3.2"
 reqwest = "0.12.28"
 rfd = "0.17.2"
 tokio = { version = "1.53.1", features = ["fs", "net", "rt", "sync"] }

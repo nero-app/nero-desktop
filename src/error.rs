@@ -27,6 +27,9 @@ pub enum Error {
     MissingExtensionVersion,
     EmptyExtensionVersion,
     ExtensionAlreadyLoaded(String),
+    InvalidCallbackUrl(String),
+    CallbackNotPending(String),
+    CallbackLockPoisoned,
     Torrent(String),
     TorrentDisabled,
     UnsupportedImageResource,
@@ -94,6 +97,11 @@ impl fmt::Display for Error {
                 formatter.write_str("extension component metadata `version` cannot be empty")
             }
             Self::ExtensionAlreadyLoaded(id) => write!(formatter, "extension already loaded: {id}"),
+            Self::InvalidCallbackUrl(detail) => write!(formatter, "invalid callback URL: {detail}"),
+            Self::CallbackNotPending(address) => {
+                write!(formatter, "no callback is pending for {address}")
+            }
+            Self::CallbackLockPoisoned => formatter.write_str("the callback lock was poisoned"),
             Self::Torrent(detail) => write!(formatter, "torrent session failed: {detail}"),
             Self::TorrentDisabled => formatter.write_str("torrent playback is disabled"),
             Self::UnsupportedImageResource => {

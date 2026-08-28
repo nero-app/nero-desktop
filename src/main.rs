@@ -45,6 +45,7 @@ fn main() -> iced::Result {
     };
 
     let app = iced::application(State::new, State::update, State::view)
+        .subscription(State::subscription)
         .theme(theme::nero())
         .window(window)
         .centered()

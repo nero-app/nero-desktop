@@ -3941,6 +3941,7 @@ dependencies = [
  "nero-extensions",
  "nero-file-store",
  "nero-media-proxy",
+ "percent-encoding",
  "reqwest",
  "rfd",
  "rust-i18n",
