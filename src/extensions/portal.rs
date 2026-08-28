@@ -43,7 +43,15 @@ pub struct Opener;
 #[async_trait::async_trait]
 impl nero_extensions::Opener for Opener {
     async fn open(&self, uri: &str) -> bool {
-        todo!()
+        let Ok(uri) = Url::parse(uri) else {
+            return false;
+        };
+
+        if !matches!(uri.scheme(), "http" | "https") || uri.host_str().is_none() {
+            return false;
+        }
+
+        open::that_detached(uri.as_str()).is_ok()
     }
 }
 
