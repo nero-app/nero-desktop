@@ -4,7 +4,7 @@ mod extensions;
 use std::path::Path;
 use std::sync::Arc;
 
-use iced::widget::{button, column, scrollable, stack, text};
+use iced::widget::{button, column, scrollable, text};
 use iced::{padding, Element, Fill};
 use rust_i18n::t;
 
@@ -14,8 +14,7 @@ use crate::components::typography::TextExt;
 use crate::extensions::Registry;
 use crate::i18n::Language;
 use crate::preferences::{MediaProxyPreferences, PreferenceAction};
-use crate::screens::{Route, SettingsTab};
-use crate::widgets::toolbar::{toolbar, Link};
+use crate::screens::SettingsTab;
 
 enum Section {
     App,
@@ -60,7 +59,6 @@ pub enum Message {
     App(app::Message),
     Extensions(extensions::Message),
     TabSelected(SettingsTab),
-    Navigate(Route),
 }
 
 pub type Action<Message> = crate::screens::Action<Message, PreferenceAction>;
@@ -80,7 +78,6 @@ impl Settings {
                 self.section = Section::new(self.extensions.clone(), tab);
                 return Action::None;
             }
-            Message::Navigate(route) => return Action::Navigate(route),
             message => message,
         };
 
@@ -99,15 +96,18 @@ impl Settings {
         player_path: Option<&'a Path>,
         media_proxy: &'a MediaProxyPreferences,
     ) -> Element<'a, Message> {
-        let screen = sidebar_layout(
+        sidebar_layout(
             self.content(language, player_path, media_proxy),
             self.sidebar(),
-        );
-
-        stack![screen, self.overlay()].into()
+        )
+        .into()
     }
 
-    fn overlay(&self) -> Option<Element<'_, Message>> {
+    pub fn tab(&self) -> SettingsTab {
+        self.section.tab()
+    }
+
+    pub fn overlay(&self) -> Option<Element<'_, Message>> {
         match &self.section {
             Section::Extensions(section) => section
                 .overlay()
@@ -134,7 +134,7 @@ impl Settings {
             body
         ]
         .spacing(32)
-        .padding(padding::top(16).right(32).bottom(32).left(32));
+        .padding(padding::right(32).bottom(32).left(32));
 
         scrollable(content).width(Fill).height(Fill).into()
     }
@@ -154,22 +154,11 @@ impl Settings {
                 })
         };
 
-        let nav = column(SettingsTab::ALL.map(|tab| link(tab).into()))
+        column(SettingsTab::ALL.map(|tab| link(tab).into()))
             .spacing(4)
             .width(Fill)
             .height(Fill)
-            .padding(padding::right(32).bottom(32).left(16));
-
-        let active = match current {
-            SettingsTab::App => Link::Settings,
-            SettingsTab::Extensions => Link::Extensions,
-        };
-
-        column![
-            toolbar(Some(active), |link| Message::Navigate(link.into())),
-            nav
-        ]
-        .height(Fill)
-        .into()
+            .padding(padding::right(32).bottom(32).left(16))
+            .into()
     }
 }

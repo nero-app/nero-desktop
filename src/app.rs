@@ -8,6 +8,7 @@ use rust_i18n::t;
 use tokio::net::TcpListener;
 use url::Url;
 
+use crate::components::layout::main_layout;
 use crate::components::typography::TextExt;
 use crate::error::{Error, Result};
 use crate::extensions::{default_cache_dir, Registry};
@@ -17,8 +18,9 @@ use crate::interactions;
 use crate::media::Media;
 use crate::player::Playback;
 use crate::preferences::{MediaProxyPreferences, PreferenceAction, Preferences};
-use crate::screens::{home, search, series, settings, Action, Route};
+use crate::screens::{home, search, series, settings, Action, Route, SettingsTab};
 use crate::server::Server;
+use crate::widgets::toolbar::{self, Link};
 
 enum Screen {
     Home,
@@ -85,15 +87,17 @@ pub struct State {
     status: Status,
     screen: Screen,
     preferences: Preferences,
+    search_query: String,
     interactions: interactions::InteractionState,
 }
 
 pub enum Message {
+    Navigate(Route),
     Booted(Result<Boot>),
     MediaConfigured(Result<PreferenceAction>),
     CallbackReceived(String),
     Interaction(interactions::Message),
-    Home(home::Message),
+    Toolbar(toolbar::Message),
     Search(search::Message),
     Series(series::Message),
     Settings(settings::Message),
@@ -108,6 +112,7 @@ impl State {
             status: Status::Starting,
             screen: Screen::Home,
             preferences,
+            search_query: String::new(),
             interactions,
         };
 
@@ -165,7 +170,20 @@ impl State {
         };
 
         let action = match (&mut self.screen, message) {
-            (Screen::Home, Message::Home(message)) => home::update(message).map(Message::Home),
+            (_, Message::Toolbar(toolbar::Message::Navigate(link))) => {
+                Action::Navigate(link.into())
+            }
+            (_, Message::Toolbar(toolbar::Message::QueryChanged(query))) => {
+                self.search_query = query;
+                Action::None
+            }
+            (Screen::Search(screen), Message::Toolbar(toolbar::Message::Search)) => Action::run(
+                screen
+                    .search(self.search_query.clone())
+                    .map(Message::Search),
+            ),
+            (_, Message::Toolbar(toolbar::Message::Search)) => Action::Navigate(Route::Search),
+            (_, Message::Navigate(route)) => Action::Navigate(route),
             (Screen::Search(screen), Message::Search(message)) => {
                 screen.update(message).map(Message::Search)
             }
@@ -249,8 +267,11 @@ impl State {
         match route {
             Route::Home => (Screen::Home, Task::none()),
             Route::Search => {
-                let (screen, task) =
-                    search::Search::new(boot.extensions.as_ref(), boot.images.clone());
+                let (screen, task) = search::Search::new(
+                    boot.extensions.as_ref(),
+                    boot.images.clone(),
+                    self.search_query.clone(),
+                );
                 (Screen::Search(screen), task.map(Message::Search))
             }
             Route::Series {
@@ -289,11 +310,9 @@ impl State {
                 .center(Fill)
                 .into(),
             Status::Ready(_) => match &self.screen {
-                Screen::Home => home::view().map(Message::Home),
+                Screen::Home => home::view(Route::Search).map(Message::Navigate),
                 Screen::Search(screen) => screen.view().map(Message::Search),
-                Screen::Series(screen) => screen
-                    .view(self.preferences.player_path().is_some())
-                    .map(Message::Series),
+                Screen::Series(screen) => screen.view().map(Message::Series),
                 Screen::Settings(screen) => screen
                     .view(
                         self.preferences.language(),
@@ -304,6 +323,38 @@ impl State {
             },
         };
 
-        stack![screen, self.interactions.view().map(Message::Interaction)].into()
+        let content = if matches!(self.status, Status::Ready(_)) {
+            let active = match &self.screen {
+                Screen::Home => Some(Link::Home),
+                Screen::Search(_) | Screen::Series(_) => None,
+                Screen::Settings(screen) => Some(match screen.tab() {
+                    SettingsTab::App => Link::Settings,
+                    SettingsTab::Extensions => Link::Extensions,
+                }),
+            };
+            main_layout(
+                toolbar::toolbar(active, &self.search_query).map(Message::Toolbar),
+                screen,
+            )
+            .into()
+        } else {
+            screen
+        };
+        let overlay = match &self.screen {
+            Screen::Series(screen) => screen
+                .overlay(self.preferences.player_path().is_some())
+                .map(|overlay| overlay.map(Message::Series)),
+            Screen::Settings(screen) => screen
+                .overlay()
+                .map(|overlay| overlay.map(Message::Settings)),
+            _ => None,
+        };
+
+        stack![
+            content,
+            overlay,
+            self.interactions.view().map(Message::Interaction)
+        ]
+        .into()
     }
 }

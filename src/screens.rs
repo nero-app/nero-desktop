@@ -46,7 +46,6 @@ impl From<Link> for Route {
             Link::Home => Route::Home,
             Link::Extensions => Route::Settings(SettingsTab::Extensions),
             Link::Settings => Route::Settings(SettingsTab::App),
-            Link::Search => Route::Search,
         }
     }
 }

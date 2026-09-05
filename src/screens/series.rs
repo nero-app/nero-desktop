@@ -1,6 +1,6 @@
 mod episodes;
 
-use iced::widget::{button, column, container, row, scrollable, space, stack, text};
+use iced::widget::{button, column, container, row, scrollable, space, text};
 use iced::{padding, Center, Element, Fill, Length, Task};
 use nero_extensions::types::Series as SeriesData;
 use nero_extensions::Extension;
@@ -19,10 +19,9 @@ use crate::fetch::Fetch;
 use crate::icons;
 use crate::images::Images;
 use crate::player::Playback;
-use crate::screens::{Action, Route};
+use crate::screens::Action;
 use crate::theme::PALETTE;
 use crate::widgets::extension;
-use crate::widgets::toolbar::toolbar;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Tab {
@@ -59,7 +58,6 @@ pub enum Message {
     ExtensionClicked,
     CloseDialog,
     TabSelected(Tab),
-    Navigate(Route),
 }
 
 impl Series {
@@ -135,23 +133,20 @@ impl Series {
                 self.tab = tab;
                 Action::None
             }
-            Message::Navigate(route) => Action::Navigate(route),
         }
     }
 
-    pub fn view(&self, has_player: bool) -> Element<'_, Message> {
+    pub fn view(&self) -> Element<'_, Message> {
         let poster = self
             .series
             .loaded()
             .and_then(|series| series.poster_resource.as_ref())
             .and_then(|resource| self.images.handle(resource));
-        let media = cover(poster, 0.0, 72.0);
-        let screen = media_layout(media, self.content());
-
-        stack![screen, self.overlay(has_player)].into()
+        let media = cover(poster, 16.0, 72.0);
+        media_layout(media, self.content()).into()
     }
 
-    fn overlay(&self, has_player: bool) -> Option<Element<'_, Message>> {
+    pub fn overlay(&self, has_player: bool) -> Option<Element<'_, Message>> {
         if self.showing_extension {
             return Some(overlay(
                 extension::info_dialog(&self.extension, Message::CloseDialog),
@@ -182,12 +177,7 @@ impl Series {
             ),
         };
 
-        column![
-            toolbar(None, |link| Message::Navigate(link.into())),
-            scrollable(body).width(Fill).height(Fill)
-        ]
-        .height(Fill)
-        .into()
+        scrollable(body).width(Fill).height(Fill).into()
     }
 
     fn header<'a>(&'a self, series: &'a SeriesData) -> Element<'a, Message> {

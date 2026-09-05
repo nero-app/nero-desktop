@@ -6,7 +6,6 @@ use nero_extensions::Extension;
 use rust_i18n::t;
 use std::collections::HashSet;
 
-use crate::components::field::search_field;
 use crate::components::layout::sidebar_layout;
 use crate::components::styles;
 use crate::components::typography::{self, TextExt};
@@ -19,7 +18,6 @@ use crate::screens::{Action, Route};
 use crate::theme::PALETTE;
 use crate::widgets::card::{series_card, SERIES_CARD_RATIO, SERIES_GRID_SPACING};
 use crate::widgets::extension;
-use crate::widgets::toolbar::{toolbar, Link};
 
 struct ExtensionSearch {
     extension: LoadedExtension,
@@ -123,8 +121,6 @@ pub struct Search {
 
 #[derive(Clone)]
 pub enum Message {
-    QueryChanged(String),
-    Submit,
     LoadMore,
 
     ResultsLoaded(ExtensionId, Result<SeriesPage>),
@@ -135,13 +131,12 @@ pub enum Message {
     ToggleCategory(ExtensionId, String),
 
     Open(LoadedExtension, String),
-    Navigate(Route),
 }
 
 impl Search {
-    pub fn new(extensions: &Registry, images: Images) -> (Self, Task<Message>) {
+    pub fn new(extensions: &Registry, images: Images, query: String) -> (Self, Task<Message>) {
         let mut search = Self {
-            query: String::new(),
+            query,
             extensions: extensions
                 .values()
                 .into_iter()
@@ -162,19 +157,6 @@ impl Search {
 
     pub fn update(&mut self, message: Message) -> Action<Message> {
         match message {
-            Message::QueryChanged(query) => {
-                self.query = query;
-                Action::None
-            }
-            Message::Submit => {
-                let query = self.query.clone();
-
-                Action::run(Task::batch(self.extensions.iter_mut().map(|extension| {
-                    extension.results.reset();
-
-                    extension.load(&query, 1)
-                })))
-            }
             Message::LoadMore => {
                 let query = self.query.clone();
 
@@ -231,8 +213,15 @@ impl Search {
                 extension,
                 series_id,
             }),
-            Message::Navigate(route) => Action::Navigate(route),
         }
+    }
+
+    pub fn search(&mut self, query: String) -> Task<Message> {
+        self.query = query;
+        Task::batch(self.extensions.iter_mut().map(|extension| {
+            extension.results.reset();
+            extension.load(&self.query, 1)
+        }))
     }
 
     fn extension_mut(&mut self, id: &ExtensionId) -> Option<&mut ExtensionSearch> {
@@ -338,13 +327,6 @@ impl Search {
     }
 
     fn sidebar(&self) -> Element<'_, Message> {
-        let search = search_field(
-            t!("media.search_placeholder"),
-            &self.query,
-            Message::QueryChanged,
-            Message::Submit,
-        );
-
         let named = self.extensions.len() > 1;
 
         let panels = self
@@ -352,17 +334,11 @@ impl Search {
             .iter()
             .map(|extension| filters_view(extension, named));
 
-        let panel = column![search]
-            .extend(panels)
+        let panel = column(panels)
             .spacing(16)
             .padding(padding::right(32).bottom(32).left(16));
 
-        column![
-            toolbar(Some(Link::Search), |link| Message::Navigate(link.into())),
-            scrollable(panel).width(Fill).height(Fill)
-        ]
-        .height(Fill)
-        .into()
+        scrollable(panel).width(Fill).height(Fill).into()
     }
 }
 
