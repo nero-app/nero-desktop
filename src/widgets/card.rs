@@ -18,7 +18,7 @@ const CAPTION_GAP: f32 = 4.0;
 
 const SERIES_CARD_PADDING: f32 = 4.0;
 
-pub const EPISODE_GRID_SPACING: f32 = 8.0;
+pub const EPISODE_GRID_SPACING: f32 = 4.0;
 
 pub const SERIES_GRID_SPACING: f32 = 0.0;
 
