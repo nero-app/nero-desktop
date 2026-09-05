@@ -7,6 +7,8 @@ empty = "Nothing found here."
 change = "Change"
 reset = "Reset"
 unlimited = "Unlimited"
+cancel = "Cancel"
+continue = "Continue"
 
 [nav]
 home = "Home"
@@ -71,3 +73,8 @@ max_cache_size_hint = "In MB, 0 for unlimited, up to %{max}."
 title = "Torrent Support"
 description = "Allow the application to stream and download torrents directly"
 output_folder_label = "Output Folder"
+
+[interactions]
+requested_by = "Requested by %{extension}"
+reference = "Reference"
+cancelling = "Cancelling..."

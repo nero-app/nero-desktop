@@ -7,6 +7,7 @@ use percent_encoding::percent_decode_str;
 use url::Url;
 
 use crate::error::{Error, Result};
+use crate::interactions;
 
 use super::keyvalue::FileStoreBackend;
 use super::{cache_key, portal, CacheLimit, ExtensionId, ExtensionMetadata, Options};
@@ -20,13 +21,21 @@ pub struct LoadedExtension {
     callbacks: Arc<portal::Callbacks>,
 }
 
-#[derive(Default)]
 pub struct Registry {
     host: WasmHost,
+    transport: Arc<interactions::Transport>,
     loaded: RwLock<BTreeMap<ExtensionId, LoadedExtension>>,
 }
 
 impl Registry {
+    pub fn new(transport: Arc<interactions::Transport>) -> Self {
+        Self {
+            host: WasmHost::default(),
+            transport,
+            loaded: RwLock::default(),
+        }
+    }
+
     pub async fn inspect(file_path: impl AsRef<Path>) -> Result<Arc<ExtensionMetadata>> {
         let metadata = WasmHost::inspect(file_path)
             .await
@@ -56,7 +65,7 @@ impl Registry {
             )
             .await?,
         );
-        let interaction = Arc::new(portal::Interaction);
+        let interaction = Arc::new(portal::Interaction::new(id.clone(), self.transport.clone()));
         let opener = Arc::new(portal::Opener);
         let callbacks = Arc::new(portal::Callbacks::new(&id));
 

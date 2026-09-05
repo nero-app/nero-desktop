@@ -3974,7 +3974,7 @@ dependencies = [
 [[package]]
 name = "nero-extensions"
 version = "0.1.0"
-source = "git+https://github.com/nero-app/libnero.git?rev=d3dd3df#d3dd3dfca2575092381424d97a8b4db132a1967a"
+source = "git+https://github.com/nero-app/libnero.git?rev=589d347#589d347360ea378df25faebb9c1d67c789595855"
 dependencies = [
  "anyhow",
  "bytes",
@@ -4005,7 +4005,7 @@ dependencies = [
 [[package]]
 name = "nero-keyvalue-ttl"
 version = "0.1.0"
-source = "git+https://github.com/nero-app/libnero.git?rev=d3dd3df#d3dd3dfca2575092381424d97a8b4db132a1967a"
+source = "git+https://github.com/nero-app/libnero.git?rev=589d347#589d347360ea378df25faebb9c1d67c789595855"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4035,7 +4035,7 @@ dependencies = [
 [[package]]
 name = "nero-portal"
 version = "0.1.0"
-source = "git+https://github.com/nero-app/libnero.git?rev=d3dd3df#d3dd3dfca2575092381424d97a8b4db132a1967a"
+source = "git+https://github.com/nero-app/libnero.git?rev=589d347#589d347360ea378df25faebb9c1d67c789595855"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4047,7 +4047,7 @@ dependencies = [
 [[package]]
 name = "nero-wasi-logging"
 version = "0.1.0"
-source = "git+https://github.com/nero-app/libnero.git?rev=d3dd3df#d3dd3dfca2575092381424d97a8b4db132a1967a"
+source = "git+https://github.com/nero-app/libnero.git?rev=589d347#589d347360ea378df25faebb9c1d67c789595855"
 dependencies = [
  "anyhow",
  "tracing",

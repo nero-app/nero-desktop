@@ -1,31 +1,148 @@
-#![allow(unused_variables)]
-
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use nero_extensions::{
     CallbackTransport, Cancel, Delivery, ListenError, ProgressHandle, SelectionRequest, Severity,
     TextRequest,
 };
+use tokio::sync::{oneshot, OwnedSemaphorePermit, Semaphore};
 use url::Url;
 
 use crate::error::{Error, Result};
+use crate::interactions::{self, ProgressId, RequestId};
 
 use super::ExtensionId;
 
-pub struct Interaction;
+type ResponseSender<T> = oneshot::Sender<Option<T>>;
+type RequestEvent = interactions::request::Event;
+
+pub struct Interaction {
+    extension_id: ExtensionId,
+    transport: Arc<interactions::Transport>,
+    request_slots: Arc<Semaphore>,
+    notification_slots: Arc<Semaphore>,
+    progress_slots: Arc<Semaphore>,
+}
+
+impl Interaction {
+    const MAX_PENDING_REQUESTS: usize = 8;
+    const MAX_LIVE_NOTIFICATIONS: usize = 4;
+    const MAX_LIVE_PROGRESSES: usize = 4;
+
+    pub fn new(extension_id: ExtensionId, transport: Arc<interactions::Transport>) -> Self {
+        Self {
+            extension_id,
+            transport,
+            request_slots: Arc::new(Semaphore::new(Self::MAX_PENDING_REQUESTS)),
+            notification_slots: Arc::new(Semaphore::new(Self::MAX_LIVE_NOTIFICATIONS)),
+            progress_slots: Arc::new(Semaphore::new(Self::MAX_LIVE_PROGRESSES)),
+        }
+    }
+
+    async fn request<T, F>(&self, event: F) -> Option<T>
+    where
+        T: Send,
+        F: FnOnce(RequestId, ResponseSender<T>) -> RequestEvent + Send,
+    {
+        let permit = self.request_slots.clone().try_acquire_owned().ok()?;
+        let id = RequestId::new(self.transport.next_key(), self.extension_id.clone());
+        let (respond, response) = oneshot::channel();
+
+        if !self
+            .transport
+            .send(interactions::Event::Request(event(id.clone(), respond)))
+        {
+            return None;
+        }
+
+        let mut guard = RequestGuard {
+            id,
+            transport: self.transport.clone(),
+            _permit: permit,
+            completed: false,
+        };
+        let response = response.await.unwrap_or(None);
+        guard.completed = true;
+        response
+    }
+}
+
+struct RequestGuard {
+    id: RequestId,
+    transport: Arc<interactions::Transport>,
+    _permit: OwnedSemaphorePermit,
+    completed: bool,
+}
+
+impl Drop for RequestGuard {
+    fn drop(&mut self) {
+        if !self.completed {
+            self.transport.send(interactions::Event::Request(
+                interactions::request::Event::Cancelled(self.id.clone()),
+            ));
+        }
+    }
+}
+
+struct Progress {
+    id: ProgressId,
+    transport: Arc<interactions::Transport>,
+    _permit: OwnedSemaphorePermit,
+}
+
+impl ProgressHandle for Progress {
+    fn report(&self, message: Option<String>, percent: Option<u8>) {
+        self.transport.send(interactions::Event::Progress(
+            interactions::progress::Event::Reported {
+                id: self.id.clone(),
+                message,
+                percent,
+            },
+        ));
+    }
+}
+
+impl Drop for Progress {
+    fn drop(&mut self) {
+        self.transport.send(interactions::Event::Progress(
+            interactions::progress::Event::Finished(self.id.clone()),
+        ));
+    }
+}
 
 #[async_trait::async_trait]
 impl nero_extensions::Interaction for Interaction {
     async fn request_text(&self, request: TextRequest) -> Option<String> {
-        todo!()
+        self.request(move |id, respond| interactions::request::Event::Text {
+            id,
+            request,
+            respond,
+        })
+        .await
     }
 
     async fn request_selection(&self, request: SelectionRequest) -> Option<Vec<u32>> {
-        todo!()
+        self.request(move |id, respond| interactions::request::Event::Selection {
+            id,
+            request,
+            respond,
+        })
+        .await
     }
 
     fn notify(&self, severity: Severity, message: String, detail: Option<String>) {
-        todo!()
+        let Ok(permit) = self.notification_slots.clone().try_acquire_owned() else {
+            return;
+        };
+
+        self.transport.send(interactions::Event::Notification(
+            interactions::notification::Event {
+                extension_id: self.extension_id.clone(),
+                severity,
+                message,
+                detail,
+                permit,
+            },
+        ));
     }
 
     fn begin_progress(
@@ -33,8 +150,26 @@ impl nero_extensions::Interaction for Interaction {
         title: String,
         cancellable: bool,
         cancel: Cancel,
-    ) -> Box<dyn ProgressHandle> {
-        todo!()
+    ) -> Option<Box<dyn ProgressHandle>> {
+        let permit = self.progress_slots.clone().try_acquire_owned().ok()?;
+        let id = ProgressId::new(self.transport.next_key(), self.extension_id.clone());
+        let sent = self.transport.send(interactions::Event::Progress(
+            interactions::progress::Event::Started {
+                id: id.clone(),
+                title,
+                cancellable,
+                cancel,
+            },
+        ));
+        if !sent {
+            return None;
+        }
+
+        Some(Box::new(Progress {
+            id,
+            transport: self.transport.clone(),
+            _permit: permit,
+        }))
     }
 }
 

@@ -6,6 +6,7 @@ mod fetch;
 mod i18n;
 mod icons;
 mod images;
+mod interactions;
 mod media;
 mod pagination;
 mod picker;

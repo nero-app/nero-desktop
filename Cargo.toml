@@ -14,7 +14,9 @@ identifier = "moe.nero.app"
 before-packaging-command = "cargo build --release"
 formats = ["app"]
 deep-link-protocols = [
-    { schemes = ["nero"], name = "moe.nero.app.callback", role = "viewer" },
+    { schemes = [
+        "nero",
+    ], name = "moe.nero.app.callback", role = "viewer" },
 ]
 
 [dependencies]
@@ -26,7 +28,7 @@ iced = { git = "https://github.com/iced-rs/iced.git", rev = "3de4514", features 
 ] }
 rust-i18n = "4.2.1"
 
-nero-extensions = { git = "https://github.com/nero-app/libnero.git", rev = "d3dd3df" }
+nero-extensions = { git = "https://github.com/nero-app/libnero.git", rev = "589d347" }
 nero-media-proxy = { git = "https://github.com/nero-app/libnero.git", rev = "d3dd3df", features = [
     "torrent-librqbit",
 ] }
@@ -46,7 +48,7 @@ open = "5.4.2"
 percent-encoding = "2.3.2"
 reqwest = "0.12.28"
 rfd = "0.17.2"
-tokio = { version = "1.53.1", features = ["fs", "net", "rt", "sync"] }
+tokio = { version = "1.53.1", features = ["fs", "net", "rt", "sync", "time"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 url = "2.5.8"

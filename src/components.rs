@@ -5,6 +5,7 @@ pub mod image;
 pub mod layout;
 pub mod styles;
 pub mod tabs;
+pub mod toast;
 pub mod typography;
 
 pub use self::divider::{divider, vertical_divider};

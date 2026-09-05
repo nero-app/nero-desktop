@@ -1,7 +1,7 @@
 use std::net::Ipv4Addr;
 use std::sync::Arc;
 
-use iced::widget::{container, text};
+use iced::widget::{container, stack, text};
 use iced::{Element, Fill, Subscription, Task};
 use reqwest::Client;
 use rust_i18n::t;
@@ -13,6 +13,7 @@ use crate::error::{Error, Result};
 use crate::extensions::{default_cache_dir, Registry};
 use crate::i18n;
 use crate::images::Images;
+use crate::interactions;
 use crate::media::Media;
 use crate::player::Playback;
 use crate::preferences::{MediaProxyPreferences, PreferenceAction, Preferences};
@@ -40,7 +41,10 @@ pub struct Boot {
 }
 
 impl Boot {
-    async fn new(preferences: MediaProxyPreferences) -> Result<Self> {
+    async fn new(
+        preferences: MediaProxyPreferences,
+        interaction_transport: Arc<interactions::Transport>,
+    ) -> Result<Self> {
         let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
             .await
             .map_err(|error| Error::Server(error.to_string()))?;
@@ -59,7 +63,7 @@ impl Boot {
         .await?;
         let server = Server::new(listener).extend(media.proxy().router());
 
-        let extensions = Arc::new(Registry::default());
+        let extensions = Arc::new(Registry::new(interaction_transport));
         let images = Images::new(http_client.clone(), default_cache_dir().join("images")).await?;
 
         tokio::spawn(async move {
@@ -81,12 +85,14 @@ pub struct State {
     status: Status,
     screen: Screen,
     preferences: Preferences,
+    interactions: interactions::InteractionState,
 }
 
 pub enum Message {
     Booted(Result<Boot>),
     MediaConfigured(Result<PreferenceAction>),
     CallbackReceived(String),
+    Interaction(interactions::Message),
     Home(home::Message),
     Search(search::Message),
     Series(series::Message),
@@ -97,13 +103,18 @@ impl State {
     pub fn new() -> (Self, Task<Message>) {
         let preferences = Preferences::default();
         let media_preferences = preferences.media_proxy().clone();
+        let (interactions, interaction_transport) = interactions::InteractionState::new();
         let state = Self {
             status: Status::Starting,
             screen: Screen::Home,
             preferences,
+            interactions,
         };
 
-        let task = Task::perform(Boot::new(media_preferences), Message::Booted);
+        let task = Task::perform(
+            Boot::new(media_preferences, interaction_transport),
+            Message::Booted,
+        );
 
         (state, task)
     }
@@ -137,6 +148,9 @@ impl State {
                 }
 
                 return Task::none();
+            }
+            Message::Interaction(message) => {
+                return self.interactions.update(message).map(Message::Interaction);
             }
             _ if !matches!(self.status, Status::Ready(_)) => return Task::none(),
             _ => {}
@@ -260,11 +274,14 @@ impl State {
     }
 
     pub fn subscription(&self) -> Subscription<Message> {
-        iced::event::listen_url().map(Message::CallbackReceived)
+        Subscription::batch([
+            iced::event::listen_url().map(Message::CallbackReceived),
+            self.interactions.subscription().map(Message::Interaction),
+        ])
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        match &self.status {
+        let screen = match &self.status {
             Status::Starting => container(text(t!("common.loading")).body())
                 .center(Fill)
                 .into(),
@@ -285,6 +302,8 @@ impl State {
                     )
                     .map(Message::Settings),
             },
-        }
+        };
+
+        stack![screen, self.interactions.view().map(Message::Interaction)].into()
     }
 }
